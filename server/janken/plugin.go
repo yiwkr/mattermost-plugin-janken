@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
+	"github.com/pkg/errors"
 )
 
 type Plugin struct {
@@ -22,27 +23,35 @@ type Plugin struct {
 
 const (
 	PluginId = "com.github.yiwkr.mattermost-plugin-janken"
-	trigger = "janken"
 )
 
 // OnAcrivate registers the plugin command
 func (p *Plugin) OnActivate() error {
 	p.router = p.InitAPI()
-	p.store, _ = NewStore(p.API)
-	return p.API.RegisterCommand(&model.Command{
-		Trigger: trigger,
-		DisplayName: "Janken",
-		Description: "Playing janken",
-		AutoComplete: true,
-		AutoCompleteDesc: "Create a janken",
-	})
+	store, err := NewStore(p.API)
+	if err != nil {
+		return errors.Wrap(err, "failed to init store")
+	}
+	p.store = store
 	return nil
 }
 
 // OnDeactivate unregister the plugin command
 func (p *Plugin) OnDeactivate() error {
-	err := p.API.UnregisterCommand("", trigger)
-	return err
+	if err := p.API.UnregisterCommand("", p.getConfiguration().Trigger); err != nil {
+		return errors.Wrap(err, "failed to deactivate command")
+	}
+	return nil
+}
+
+func getCommand(trigger string) *model.Command {
+	return &model.Command{
+		Trigger: trigger,
+		DisplayName: "Janken",
+		Description: "Playing janken",
+		AutoComplete: true,
+		AutoCompleteDesc: "Create a janken",
+	}
 }
 
 /*

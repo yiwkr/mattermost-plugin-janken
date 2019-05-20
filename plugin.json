@@ -1,6 +1,6 @@
 {
     "id": "com.github.yiwkr.mattermost-plugin-janken",
-    "name": "Janken Command",
+    "name": "Janken",
     "description": "This plugin provide /janken command.",
     "version": "0.0.1",
     "min_server_version": "5.6.0",
@@ -11,5 +11,14 @@
             "windows-amd64": "server/dist/plugin-windows-amd64.exe"
         },
         "executable": ""
+    },
+    "settings_schema": {
+        "settings": [{
+            "key": "trigger",
+            "display_name": "Trigger",
+            "type": "text",
+            "help_text": "Command trigger (default to \"janken\")",
+            "default": "janken"
+        }]
     }
 }
