@@ -5,6 +5,8 @@ GO ?= $(shell command -v go 2>/dev/null)
 DEP ?= $(shell command -v dep 2>/dev/null)
 CURL ?= $(shell command -v curl 2>/dev/null)
 
+ASSETS_DIR ?= assets
+
 .PHONY: dep
 dep:
 	cd server && $(DEP) ensure
@@ -21,6 +23,10 @@ bundle:
 	rm -rf dist/
 	mkdir -p dist/$(PLUGIN_ID)
 	cp plugin.json dist/$(PLUGIN_ID)/
+
+ifneq ($(wildcard $(ASSETS_DIR)/.),)
+	cp -r $(ASSETS_DIR) dist/$(PLUGIN_ID)/
+endif
 
 	mkdir -p dist/$(PLUGIN_ID)/server/dist
 	cp -r server/dist/* dist/$(PLUGIN_ID)/server/dist

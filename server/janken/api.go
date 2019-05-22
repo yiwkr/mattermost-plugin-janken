@@ -41,7 +41,7 @@ func (p *Plugin) handleJoin(w http.ResponseWriter, r *http.Request) {
 	gameId := req.Context["id"].(string)
 	game := p.store.jankenStore.Get(gameId)
 
-	d := NewJoinDialog(p.API, *p.ServerConfig.ServiceSettings.SiteURL, PluginId)
+	d := NewJoinDialog(p.API, *p.ServerConfig.ServiceSettings.SiteURL, PluginId, p)
 	d.Open(req.TriggerId, postId, userId, game)
 
 	response := &model.PostActionIntegrationResponse{}
@@ -113,7 +113,13 @@ func (p *Plugin) handleJoinSubmit(w http.ResponseWriter, r *http.Request) {
 		}
 		hands_str := strings.Join(hands_emoji, " ")
 		id := game.GetShortId()
-		message := fmt.Sprintf("Your hands %s are registered with janken game (%s).", hands_str, id)
+
+		l := p.GetLocalizer(game.Language)
+		message := p.Localize(l, "HandsRegisteredMessage", map[string]interface{}{
+			"HandsStr": hands_str,
+			"ID": id,
+		})
+
 		p.SendEphemeralPost(post.ChannelId, userId, message)
 	}
 }
@@ -129,17 +135,20 @@ func (p *Plugin) handleResult(w http.ResponseWriter, r *http.Request) {
 	gameId := req.Context["id"].(string)
 	game := p.store.jankenStore.Get(gameId)
 
+	// localizer
+	l := p.GetLocalizer(game.Language)
+
 	// 権限チェック
 	permission, _ := p.HasPermission(game, userId)
 	if !permission {
-		message := "Failed to show the result of the janken game. The creator of this game or the administrator can show the result."
+		message := p.Localize(l, "ResultPermissionErrorMessage", nil)
 		p.SendEphemeralPost(post.ChannelId, userId, message)
 		return
 	}
 
 	// 最低人数2人を満たしているかチェック
 	if len(game.Participants) < 2 {
-		message := "Failed to show the result of the janken game. Least 2 pariticipants are required."
+		message := p.Localize(l, "ResultNotEnoughParticipantsErrorMessage", nil)
 		p.SendEphemeralPost(post.ChannelId, req.UserId, message)
 		return
 	}
@@ -154,11 +163,13 @@ func (p *Plugin) handleResult(w http.ResponseWriter, r *http.Request) {
 	result := game.GetResult()
 	p.API.LogDebug("Result", "game", fmt.Sprintf("%#v", game), "result", fmt.Sprintf("%#v", result))
 
-	rankLabel := "Rank"
-	userNameLabel := "Username"
-	handsLabel := "Hands"
+	rankLabel := p.Localize(l, "ResultTableRankLabel", nil)
+	userNameLabel := p.Localize(l, "ResultTableUsernameLabel", nil)
+	handsLabel := p.Localize(l, "ResultTableHandsLabel", nil)
 
-	result_str := fmt.Sprintf("**Janken Game (%s)**\nResult\n", game.GetShortId())
+	result_str := p.Localize(l, "ResultTableTitle", map[string]interface{}{
+		"ID": game.GetShortId(),
+	})
 	result_str = fmt.Sprintf("%s\n%s", result_str, fmt.Sprintf("|%s|%s|%s|", rankLabel, userNameLabel, handsLabel))
 	result_str = fmt.Sprintf("%s\n%s", result_str, "|:---|:---|:---|")
 	for _, participant := range result {
@@ -199,12 +210,13 @@ func (p *Plugin) handleConfig(w http.ResponseWriter, r *http.Request) {
 	// 権限チェック
 	permission, _ := p.HasPermission(game, userId)
 	if !permission {
-		message := "Failed to open the configration dialog. The creator of this game or the administrator can configure the game."
+		l := p.GetLocalizer(game.Language)
+		message := p.Localize(l, "ConfigPermissionErrorMessage", nil)
 		p.SendEphemeralPost(post.ChannelId, userId, message)
 		return
 	}
 
-	d := NewConfigDialog(p.API, *p.ServerConfig.ServiceSettings.SiteURL, PluginId)
+	d := NewConfigDialog(p.API, *p.ServerConfig.ServiceSettings.SiteURL, PluginId, p)
 	d.Open(req.TriggerId, postId, game)
 
 	response := &model.PostActionIntegrationResponse{}
@@ -236,8 +248,11 @@ func (p *Plugin) handleConfigSubmit(w http.ResponseWriter, r *http.Request) {
 		model.ParseSlackAttachment(post, nil)
 
 		// メッセージを追加
+		l := p.GetLocalizer(game.Language)
 		user, _ := p.API.GetUser(req.UserId)
-		message := fmt.Sprintf("This janken game was deleted by @%s.", user.Username)
+		message := p.Localize(l, "JankenGameDestroyedMessage", map[string]interface{}{
+			"Username": user.Username,
+		})
 		p.AppendMessage(post, message)
 
 		// 更新

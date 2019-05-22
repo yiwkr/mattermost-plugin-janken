@@ -52,11 +52,19 @@ func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *Janken
 	}
 	username = user.Username
 
-	title := fmt.Sprintf("Janken Game (%s) created by @%s", game.GetShortId(), username)
-	description := fmt.Sprintf("Please join this janken game.\nParticipants (%d): %s", len(participants), participants_str)
-	joinButtonLabel := "Join"
-	configButtonLabel := "Config"
-	resultButtonLabel := "Result"
+	l := p.GetLocalizer(game.Language)
+	// get localized messages
+	title := p.Localize(l, "JankenGameTitle", map[string]interface{}{
+		"ID": game.GetShortId(),
+		"Username": username,
+	})
+	description := p.Localize(l, "JankenGameDescription", map[string]interface{}{
+		"ParticipantsNum": len(participants),
+		"ParticipantsStr": participants_str,
+	})
+	joinButtonLabel := p.Localize(l, "JankenGameJoinButtonLabel", nil)
+	configButtonLabel := p.Localize(l, "JankenGameConfigButtonLabel", nil)
+	resultButtonLabel := p.Localize(l, "JankenGameResultButtonLabel", nil)
 
 	attachments := []*model.SlackAttachment{{
 		Title:      title,

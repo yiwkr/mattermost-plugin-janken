@@ -1,0 +1,33 @@
+# janken game
+JankenGameTitle = "ジャンケンゲーム ({{.ID}}) created by @{{.Username}}"
+JankenGameDescription = "参加ボタン押してゲームに参加してください。\n参加者 ({{.ParticipantsNum}}): {{.ParticipantsStr}}"
+JankenGameJoinButtonLabel = "参加"
+JankenGameConfigButtonLabel = "設定"
+JankenGameResultButtonLabel = "結果"
+
+# Join
+JoinDialogTitle = "ジャンケンゲームへの参加"
+JoinDialogSubmitLabel = "保存"
+JoinDialogHandElementLabel = "{{.Index}}手目"
+JoinDialogHandElementHelp = "{{.Index}}手目を選んでください。"
+rock = "グー"
+scissors = "チョキ"
+paper = "パー"
+JoinDialogCancelLabel = "参加の取り消し"
+HandsRegisteredMessage = "あなたの手 {{.HandsStr}} はジャンケンゲーム ({{.ID}}) に登録されました"
+
+# Config
+ConfigDialogTitle = "設定"
+ConfigDialogSubmitLabel = "保存"
+ConfigDialogMaxRoundsLabel = "最大ジャンケン回数"
+ConfigDialogDestroyLabel = "ゲームの削除"
+JankenGameDestroyedMessage = "このゲームは @{{.Username}} によって削除されました"
+ConfigPermissionErrorMessage = "設定ダイアログを開けませんでした。作成者か管理者のみが設定を変更できます"
+
+# Result
+ResultTableRankLabel = "順位"
+ResultTableUserNameLabel = "名前"
+ResultTableHandsLabel = "手"
+ResultTableTitle = "**ジャンケンゲーム ({{.ID}})**\n結果\n"
+ResultPermissionErrorMessage = "ジャンケンゲームの結果を表示できませんでした。作成者か管理者のみが結果を表示できます"
+ResultNotEnoughParticipantsErrorMessage = "ジャンケンゲームの結果を表示できませんでした。結果を表示するには最低2人の参加者が必要です"

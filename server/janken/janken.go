@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/mattermost/mattermost-server/model"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -91,6 +92,7 @@ type JankenGame struct {
 	MaxParticipants int            `json:"max_participants"`
 	// 参加者
 	Participants    []*Participant `json:"participants"`
+	Language        string         `json:"language"`
 }
 
 func NewJankenGame() *JankenGame {
@@ -100,6 +102,7 @@ func NewJankenGame() *JankenGame {
 		Creator: "",
 		MaxRounds: 5,
 		Participants: make([]*Participant, 0),
+		Language: language.English.String(),
 	}
 }
 

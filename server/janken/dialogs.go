@@ -8,22 +8,6 @@ import (
 	"github.com/mattermost/mattermost-server/plugin"
 )
 
-// ジャンケンで出せる手
-var HandsOptions []*model.PostActionOptions = []*model.PostActionOptions{
-	{
-		Text:  Hands["rock"],
-		Value: "rock",
-	},
-	{
-		Text:  Hands["scissors"],
-		Value: "scissors",
-	},
-	{
-		Text:  Hands["paper"],
-		Value: "paper",
-	},
-}
-
 // 参加取消の選択肢
 var CancelOptions []*model.PostActionOptions = []*model.PostActionOptions{
 	{
@@ -52,25 +36,44 @@ type Dialog struct {
 	API      plugin.API
 	siteURL  string
 	pluginId string
+	plugin   *Plugin
 }
 
 // JoinDialogは"参加"ボタンが押されたときに開くダイアログ
 type JoinDialog struct { Dialog }
 
-func NewJoinDialog(api plugin.API, siteURL, pluginId string) *JoinDialog {
+func NewJoinDialog(api plugin.API, siteURL, pluginId string, plugin *Plugin) *JoinDialog {
 	d := &JoinDialog{}
 	d.API = api
 	d.siteURL = siteURL
 	d.pluginId = pluginId
+	d.plugin = plugin
 	return d
 }
 
 func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 	d.API.LogDebug("openJoinDialog is called")
 
-	cancelLabel := "Cancel"
-	dialogTitle := "To join the janken game"
-	submitLabel := "Save"
+	l := d.plugin.GetLocalizer(game.Language)
+	dialogTitle := d.plugin.Localize(l, "JoinDialogTitle", nil)
+	submitLabel := d.plugin.Localize(l, "JoinDialogSubmitLabel", nil)
+	cancelLabel := d.plugin.Localize(l, "JoinDialogCancelLabel", nil)
+
+	// ジャンケンで出せる手
+	var HandsOptions []*model.PostActionOptions = []*model.PostActionOptions{
+		{
+			Text:  d.plugin.Localize(l, "rock", nil),
+			Value: "rock",
+		},
+		{
+			Text:  d.plugin.Localize(l, "scissors", nil),
+			Value: "scissors",
+		},
+		{
+			Text:  d.plugin.Localize(l, "paper", nil),
+			Value: "paper",
+		},
+	}
 
 	participant := game.GetParticipant(userId)
 	if participant == nil {
@@ -80,18 +83,28 @@ func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 	// 手の入力フォームを追加
 	elements := []model.DialogElement{}
 	for i := 0; i < game.MaxRounds; i++ {
-		hand := participant.GetHand(i)
 
 		i1 := i + 1  // 1-base index
+		displayName := d.plugin.Localize(l, "JoinDialogHandElementLabel", map[string]interface{}{
+			"Index": i1,
+		})
+		name := fmt.Sprintf("hand%d", i1)
+		helpText := d.plugin.Localize(l, "JoinDialogHandElementHelp", map[string]interface{}{
+			"Index": i1,
+		})
+
+		hand := participant.GetHand(i)
+		localizedHand := d.plugin.Localize(l, hand, nil)
+
 		elements = append(elements, model.DialogElement{
-			DisplayName: fmt.Sprintf("Hand %d", i1),
-			Name:        fmt.Sprintf("hand%d", i1),
+			DisplayName: displayName,
+			Name:        name,
 			Type:        "select",
-			Placeholder: Hands[hand],
+			Placeholder: localizedHand,
 			Default:     hand,
 			Optional:    true,
 			Options:     HandsOptions,
-			HelpText:    fmt.Sprintf("Choose hand %d", i1),
+			HelpText:    helpText,
 		})
 	}
 
@@ -126,11 +139,12 @@ func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 // ConfigDialogは"設定"ボタンが押されたときに開くダイアログ
 type ConfigDialog struct { Dialog }
 
-func NewConfigDialog(api plugin.API, siteURL, pluginId string) *ConfigDialog {
+func NewConfigDialog(api plugin.API, siteURL, pluginId string, plugin *Plugin) *ConfigDialog {
 	d := &ConfigDialog{}
 	d.API = api
 	d.siteURL = siteURL
 	d.pluginId = pluginId
+	d.plugin = plugin
 	return d
 }
 
@@ -145,10 +159,11 @@ func (d *ConfigDialog) Open(triggerId, postId string, game *JankenGame) {
 		})
 	}
 
-	maxRoundsLabel := "Max rounds"
-	destroyLabel := "Destroy this game"
-	dialogTitle := "Config"
-	submitLabel := "Save"
+	l := d.plugin.GetLocalizer(game.Language)
+	dialogTitle := d.plugin.Localize(l, "ConfigDialogTitle", nil)
+	submitLabel := d.plugin.Localize(l, "ConfigDialogSubmitLabel", nil)
+	maxRoundsLabel := d.plugin.Localize(l, "ConfigDialogMaxRoundsLabel", nil)
+	destroyLabel := d.plugin.Localize(l, "ConfigDialogDestroyLabel", nil)
 
 	elements := []model.DialogElement{
 		{
