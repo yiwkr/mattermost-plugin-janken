@@ -113,7 +113,7 @@ func (p *Plugin) handleJoinSubmit(w http.ResponseWriter, r *http.Request) {
 		}
 		hands_str := strings.Join(hands_emoji, " ")
 		id := game.GetShortId()
-		message := fmt.Sprintf(`あなたの手 %s をジャンケンゲーム(%s)に登録しました`, hands_str, id)
+		message := fmt.Sprintf("Your hands %s are registered with janken game (%s).", hands_str, id)
 		p.SendEphemeralPost(post.ChannelId, userId, message)
 	}
 }
@@ -132,14 +132,14 @@ func (p *Plugin) handleResult(w http.ResponseWriter, r *http.Request) {
 	// 権限チェック
 	permission, _ := p.HasPermission(game, userId)
 	if !permission {
-		message := fmt.Sprint("ジャンケンゲームの結果を表示できませんでした。結果を表示できるのは作成者か管理者のみです。")
+		message := "Failed to show the result of the janken game. The creator of this game or the administrator can show the result."
 		p.SendEphemeralPost(post.ChannelId, userId, message)
 		return
 	}
 
 	// 最低人数2人を満たしているかチェック
 	if len(game.Participants) < 2 {
-		message := "ジャンケンゲームの結果を表示できませんでした。結果を表示するには2人以上の参加者が必要です"
+		message := "Failed to show the result of the janken game. Least 2 pariticipants are required."
 		p.SendEphemeralPost(post.ChannelId, req.UserId, message)
 		return
 	}
@@ -154,8 +154,12 @@ func (p *Plugin) handleResult(w http.ResponseWriter, r *http.Request) {
 	result := game.GetResult()
 	p.API.LogDebug("Result", "game", fmt.Sprintf("%#v", game), "result", fmt.Sprintf("%#v", result))
 
-	result_str := fmt.Sprintf("**ジャンケンゲーム (%s)**\n結果\n", game.GetShortId())
-	result_str = fmt.Sprintf("%s\n%s", result_str, "|順位|名前|手|")
+	rankLabel := "Rank"
+	userNameLabel := "Username"
+	handsLabel := "Hands"
+
+	result_str := fmt.Sprintf("**Janken Game (%s)**\nResult\n", game.GetShortId())
+	result_str = fmt.Sprintf("%s\n%s", result_str, fmt.Sprintf("|%s|%s|%s|", rankLabel, userNameLabel, handsLabel))
 	result_str = fmt.Sprintf("%s\n%s", result_str, "|:---|:---|:---|")
 	for _, participant := range result {
 		username := participant.UserId
@@ -170,7 +174,7 @@ func (p *Plugin) handleResult(w http.ResponseWriter, r *http.Request) {
 		}
 		hands_str := strings.Join(hands, " ")
 
-		text := fmt.Sprintf("|%d位|@%s|%s|", participant.Rank, username, hands_str)
+		text := fmt.Sprintf("|%d|@%s|%s|", participant.Rank, username, hands_str)
 		result_str = fmt.Sprintf("%s\n%s", result_str, text)
 	}
 
@@ -195,7 +199,7 @@ func (p *Plugin) handleConfig(w http.ResponseWriter, r *http.Request) {
 	// 権限チェック
 	permission, _ := p.HasPermission(game, userId)
 	if !permission {
-		message := fmt.Sprint("ジャンケンゲームの設定を開けませんでした。設定は作成者か管理者のみが実行できます。")
+		message := "Failed to open the configration dialog. The creator of this game or the administrator can configure the game."
 		p.SendEphemeralPost(post.ChannelId, userId, message)
 		return
 	}
@@ -233,7 +237,7 @@ func (p *Plugin) handleConfigSubmit(w http.ResponseWriter, r *http.Request) {
 
 		// メッセージを追加
 		user, _ := p.API.GetUser(req.UserId)
-		message := fmt.Sprintf("このジャンケンゲームは@%sによって削除されました", user.Username)
+		message := fmt.Sprintf("This janken game was deleted by @%s.", user.Username)
 		p.AppendMessage(post, message)
 
 		// 更新

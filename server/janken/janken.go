@@ -14,9 +14,9 @@ const (
 
 // 英語名の手と日本語名の手の対応
 var Hands map[string]string = map[string]string{
-	"rock": "グー",
-	"scissors": "チョキ",
-	"paper": "パー",
+	"rock": "Rock",
+	"scissors": "Scissors",
+	"paper": "Paper",
 }
 
 // emojiとの対応

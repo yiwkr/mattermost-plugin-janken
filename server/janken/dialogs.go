@@ -31,7 +31,7 @@ var CancelOptions []*model.PostActionOptions = []*model.PostActionOptions{
 		Value: "false",
 	},
 	{
-		Text: "参加取消",
+		Text: "cancel",
 		Value: "true",
 	},
 }
@@ -43,7 +43,7 @@ var DestroyOptions []*model.PostActionOptions = []*model.PostActionOptions{
 		Value: "false",
 	},
 	{
-		Text: "削除",
+		Text: "destroy",
 		Value: "true",
 	},
 }
@@ -68,6 +68,10 @@ func NewJoinDialog(api plugin.API, siteURL, pluginId string) *JoinDialog {
 func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 	d.API.LogDebug("openJoinDialog is called")
 
+	cancelLabel := "Cancel"
+	dialogTitle := "To join the janken game"
+	submitLabel := "Save"
+
 	participant := game.GetParticipant(userId)
 	if participant == nil {
 		participant = NewParticipant(userId)
@@ -80,19 +84,19 @@ func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 
 		i1 := i + 1  // 1-base index
 		elements = append(elements, model.DialogElement{
-			DisplayName: fmt.Sprintf("%d手目", i1),
+			DisplayName: fmt.Sprintf("Hand %d", i1),
 			Name:        fmt.Sprintf("hand%d", i1),
 			Type:        "select",
 			Placeholder: Hands[hand],
 			Default:     hand,
 			Optional:    true,
 			Options:     HandsOptions,
-			HelpText:    fmt.Sprintf("%d手目を選んでください", i1),
+			HelpText:    fmt.Sprintf("Choose hand %d", i1),
 		})
 	}
 
 	elements = append(elements, model.DialogElement{
-		DisplayName: "参加取消",
+		DisplayName: cancelLabel,
 		Name:        "cancel",
 		Type:        "select",
 		Placeholder: "-",
@@ -103,8 +107,8 @@ func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 
 	dialog := model.Dialog{
 		CallbackId:     postId,
-		Title:          "ジャンケンゲームへの参加",
-		SubmitLabel:    "保存",
+		Title:          dialogTitle,
+		SubmitLabel:    submitLabel,
 		NotifyOnCancel: false,
 		State:          game.Id,
 		Elements:       elements,
@@ -141,9 +145,14 @@ func (d *ConfigDialog) Open(triggerId, postId string, game *JankenGame) {
 		})
 	}
 
+	maxRoundsLabel := "Max rounds"
+	destroyLabel := "Destroy this game"
+	dialogTitle := "Config"
+	submitLabel := "Save"
+
 	elements := []model.DialogElement{
 		{
-			DisplayName: "最大ジャンケン回数",
+			DisplayName: maxRoundsLabel,
 			Name:        "max_rounds",
 			Type:        "select",
 			Placeholder: strconv.Itoa(game.MaxRounds),
@@ -151,7 +160,7 @@ func (d *ConfigDialog) Open(triggerId, postId string, game *JankenGame) {
 			Options:     maxRoundsOptions,
 		},
 		{
-			DisplayName: "ゲームを削除する",
+			DisplayName: destroyLabel,
 			Name:        "destroy",
 			Type:        "select",
 			Placeholder: "-",
@@ -163,8 +172,8 @@ func (d *ConfigDialog) Open(triggerId, postId string, game *JankenGame) {
 
 	dialog := model.Dialog{
 		CallbackId:     postId,
-		Title:          "設定",
-		SubmitLabel:    "保存",
+		Title:          dialogTitle,
+		SubmitLabel:    submitLabel,
 		NotifyOnCancel: false,
 		State:          game.Id,
 		Elements:       elements,

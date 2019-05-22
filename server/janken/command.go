@@ -52,12 +52,18 @@ func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *Janken
 	}
 	username = user.Username
 
+	title := fmt.Sprintf("Janken Game (%s) created by @%s", game.GetShortId(), username)
+	description := fmt.Sprintf("Please join this janken game.\nParticipants (%d): %s", len(participants), participants_str)
+	joinButtonLabel := "Join"
+	configButtonLabel := "Config"
+	resultButtonLabel := "Result"
+
 	attachments := []*model.SlackAttachment{{
-		Title:      fmt.Sprintf("ジャンケンゲーム (%s) created by @%s", game.GetShortId(), username),
-		Text:       fmt.Sprintf("参加ボタンを押してゲームに参加してください。\n参加者(%d人): %s", len(participants), participants_str),
+		Title:      title,
+		Text:       description,
 		Actions:    []*model.PostAction{
 			{
-				Name: "参加",
+				Name: joinButtonLabel,
 				Type: model.POST_ACTION_TYPE_BUTTON,
 				Integration: &model.PostActionIntegration{
 					URL:     fmt.Sprintf("%s/plugins/%s/api/v1/janken/join", siteURL, pluginId),
@@ -65,7 +71,7 @@ func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *Janken
 				},
 			},
 			{
-				Name: "設定",
+				Name: configButtonLabel,
 				Type: model.POST_ACTION_TYPE_BUTTON,
 				Integration: &model.PostActionIntegration{
 					URL:     fmt.Sprintf("%s/plugins/%s/api/v1/janken/config", siteURL, pluginId),
@@ -73,7 +79,7 @@ func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *Janken
 				},
 			},
 			{
-				Name: "結果",
+				Name: resultButtonLabel,
 				Type: model.POST_ACTION_TYPE_BUTTON,
 				Integration: &model.PostActionIntegration{
 					URL: fmt.Sprintf("%s/plugins/%s/api/v1/janken/result", siteURL, pluginId),
