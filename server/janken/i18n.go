@@ -11,8 +11,11 @@ import (
 	"golang.org/x/text/language"
 )
 
+var defaultLanguage language.Tag = language.English
+
+
 func (p *Plugin) initBundle() (*i18n.Bundle, error) {
-	bundle := i18n.NewBundle(language.English)
+	bundle := i18n.NewBundle(defaultLanguage)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 
 	exPath, err := os.Executable()
