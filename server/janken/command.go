@@ -101,6 +101,9 @@ func (p *Plugin) parseArgs(command string) (*ParsedArgs, error) {
 			option := strings.TrimPrefix(args[i], "-")
 			switch {
 			case option == "l":
+				if i >= len(args) - 1 {
+					return nil, errors.New(fmt.Sprintf(`"-l" option requires a value, "en" or "ja".`))
+				}
 				parsedArgs.Language = args[i+1]
 				i++
 			default:
