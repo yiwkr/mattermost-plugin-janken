@@ -8,6 +8,31 @@ import (
 	"github.com/kballard/go-shellquote"
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+)
+
+var (
+	jankenGameTitle = &i18n.Message{
+		ID: "JankenGameTitle",
+		Other: "Janken Game ({{.ID}}) created by @{{.Username}}",
+	}
+	jankenGameDescription = &i18n.Message{
+		ID: "JankenGameDescription",
+		Other: `Please join this janken game.
+Participants ({{.ParticipantsNum}}): {{.ParticipantsStr}}`,
+	}
+	jankenGameJoinButtonLabel = &i18n.Message{
+		ID: "JankenGameJoinButtonLabel",
+		Other: "Join",
+	}
+	jankenGameConfigButtonLabel = &i18n.Message{
+		ID: "JankenGameConfigButtonLabel",
+		Other: "Config",
+	}
+	jankenGameResultButtonLabel = &i18n.Message{
+		ID: "JankenGameResultButtonLabel",
+		Other: "Result",
+	}
 )
 
 type ParsedArgs struct {
@@ -123,17 +148,17 @@ func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *Janken
 
 	l := p.GetLocalizer(game.Language)
 	// get localized messages
-	title := p.Localize(l, "JankenGameTitle", map[string]interface{}{
+	title := p.Localize(l, jankenGameTitle, map[string]interface{}{
 		"ID": game.GetShortId(),
 		"Username": username,
 	})
-	description := p.Localize(l, "JankenGameDescription", map[string]interface{}{
+	description := p.Localize(l, jankenGameDescription, map[string]interface{}{
 		"ParticipantsNum": len(participants),
 		"ParticipantsStr": participants_str,
 	})
-	joinButtonLabel := p.Localize(l, "JankenGameJoinButtonLabel", nil)
-	configButtonLabel := p.Localize(l, "JankenGameConfigButtonLabel", nil)
-	resultButtonLabel := p.Localize(l, "JankenGameResultButtonLabel", nil)
+	joinButtonLabel := p.Localize(l, jankenGameJoinButtonLabel, nil)
+	configButtonLabel := p.Localize(l, jankenGameConfigButtonLabel, nil)
+	resultButtonLabel := p.Localize(l, jankenGameResultButtonLabel, nil)
 
 	attachments := []*model.SlackAttachment{{
 		Title:      title,

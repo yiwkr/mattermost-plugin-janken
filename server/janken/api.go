@@ -10,6 +10,48 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+)
+
+var (
+	handsRegisteredMessage = &i18n.Message{
+		ID: "HandsRegisteredMessage",
+		Other: "Your hands {{.HandsStr}} are registered with janken game ({{.ID}}).",
+	}
+	resultPermissionErrorMessage = &i18n.Message{
+		ID: "ResultPermissionErrorMessage",
+		Other: "Failed to show the result of the janken game. The creator of this game or the administrator can show the result.",
+	}
+	resultNotEnoughParticipantsErrorMessage = &i18n.Message{
+		ID: "ResultNotEnoughParticipantsErrorMessage",
+		Other: "Failed to show the result of the janken game. Least 2 pariticipants are required.",
+	}
+	resultTableRankLabel = &i18n.Message{
+		ID: "ResultTableRankLabel",
+		Other: "Rank",
+	}
+	resultTableUsernameLabel = &i18n.Message{
+		ID: "ResultTableUsernameLabel",
+		Other: "Username",
+	}
+	resultTableHandsLabel = &i18n.Message{
+		ID: "ResultTableHandsLabel",
+		Other: "Hands",
+	}
+	resultTableTitle = &i18n.Message{
+		ID: "ResultTableTitle",
+		Other: `**Janken Game ({{.ID}})**
+Result
+`,
+	}
+	configPermissionErrorMessage = &i18n.Message{
+		ID: "ConfigPermissionErrorMessage",
+		Other: "Failed to open the configration dialog. The creator of this game or the administrator can configure the game.",
+	}
+	jankenGameDestroyedMessage = &i18n.Message{
+		ID: "JankenGameDestroyedMessage",
+		Other: "This janken game was destroyed by @{{.Username}}.",
+	}
 )
 
 func (p *Plugin) InitAPI() *mux.Router {
@@ -115,7 +157,7 @@ func (p *Plugin) handleJoinSubmit(w http.ResponseWriter, r *http.Request) {
 		id := game.GetShortId()
 
 		l := p.GetLocalizer(game.Language)
-		message := p.Localize(l, "HandsRegisteredMessage", map[string]interface{}{
+		message := p.Localize(l, handsRegisteredMessage, map[string]interface{}{
 			"HandsStr": hands_str,
 			"ID": id,
 		})
@@ -141,14 +183,14 @@ func (p *Plugin) handleResult(w http.ResponseWriter, r *http.Request) {
 	// 権限チェック
 	permission, _ := p.HasPermission(game, userId)
 	if !permission {
-		message := p.Localize(l, "ResultPermissionErrorMessage", nil)
+		message := p.Localize(l, resultPermissionErrorMessage, nil)
 		p.SendEphemeralPost(post.ChannelId, userId, message)
 		return
 	}
 
 	// 最低人数2人を満たしているかチェック
 	if len(game.Participants) < 2 {
-		message := p.Localize(l, "ResultNotEnoughParticipantsErrorMessage", nil)
+		message := p.Localize(l, resultNotEnoughParticipantsErrorMessage, nil)
 		p.SendEphemeralPost(post.ChannelId, req.UserId, message)
 		return
 	}
@@ -163,11 +205,11 @@ func (p *Plugin) handleResult(w http.ResponseWriter, r *http.Request) {
 	result := game.GetResult()
 	p.API.LogDebug("Result", "game", fmt.Sprintf("%#v", game), "result", fmt.Sprintf("%#v", result))
 
-	rankLabel := p.Localize(l, "ResultTableRankLabel", nil)
-	userNameLabel := p.Localize(l, "ResultTableUsernameLabel", nil)
-	handsLabel := p.Localize(l, "ResultTableHandsLabel", nil)
+	rankLabel := p.Localize(l, resultTableRankLabel, nil)
+	userNameLabel := p.Localize(l, resultTableUsernameLabel, nil)
+	handsLabel := p.Localize(l, resultTableHandsLabel, nil)
 
-	result_str := p.Localize(l, "ResultTableTitle", map[string]interface{}{
+	result_str := p.Localize(l, resultTableTitle, map[string]interface{}{
 		"ID": game.GetShortId(),
 	})
 	result_str = fmt.Sprintf("%s\n%s", result_str, fmt.Sprintf("|%s|%s|%s|", rankLabel, userNameLabel, handsLabel))
@@ -211,7 +253,7 @@ func (p *Plugin) handleConfig(w http.ResponseWriter, r *http.Request) {
 	permission, _ := p.HasPermission(game, userId)
 	if !permission {
 		l := p.GetLocalizer(game.Language)
-		message := p.Localize(l, "ConfigPermissionErrorMessage", nil)
+		message := p.Localize(l, configPermissionErrorMessage, nil)
 		p.SendEphemeralPost(post.ChannelId, userId, message)
 		return
 	}
@@ -250,7 +292,7 @@ func (p *Plugin) handleConfigSubmit(w http.ResponseWriter, r *http.Request) {
 		// メッセージを追加
 		l := p.GetLocalizer(game.Language)
 		user, _ := p.API.GetUser(req.UserId)
-		message := p.Localize(l, "JankenGameDestroyedMessage", map[string]interface{}{
+		message := p.Localize(l, jankenGameDestroyedMessage, map[string]interface{}{
 			"Username": user.Username,
 		})
 		p.AppendMessage(post, message)

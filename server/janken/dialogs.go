@@ -6,6 +6,61 @@ import (
 
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+)
+
+var handMessages = map[string]*i18n.Message{
+	"rock": &i18n.Message{
+		ID: "JoinDialogHandRock",
+		Other: "Rock",
+	},
+	"scissors": &i18n.Message{
+		ID: "JoinDialogHandScissors",
+		Other: "Scissors",
+	},
+	"paper": &i18n.Message{
+		ID: "JoinDialogHandPaper",
+		Other: "Paper",
+	},
+}
+
+var (
+	joinDialogTitle = &i18n.Message{
+		ID: "JoinDialogTitle",
+		Other: "Join the janken game",
+	}
+	joinDialogSubmitLabel = &i18n.Message{
+		ID: "JoinDialogSubmitLabel",
+		Other: "Save",
+	}
+	joinDialogCancelLabel = &i18n.Message{
+		ID: "JoinDialogCancelLabel",
+		Other: "Cancel",
+	}
+	joinDialogHandElementLabel = &i18n.Message{
+		ID: "JoinDialogHandElementLabel",
+		Other: "Hand {{.Index}}",
+	}
+	joinDialogHandElementHelp = &i18n.Message{
+		ID: "JoinDialogHandElementHelp",
+		Other: "Choose hand {{.Index}}",
+	}
+	configDialogTitle = &i18n.Message{
+		ID: "ConfigDialogTitle",
+		Other: "Config",
+	}
+	configDialogSubmitLabel = &i18n.Message{
+		ID: "ConfigDialogSubmitLabel",
+		Other: "Save",
+	}
+	configDialogMaxRoundsLabel = &i18n.Message{
+		ID: "ConfigDialogMaxRoundsLabel",
+		Other: "Max rounds",
+	}
+	configDialogDestroyLabel = &i18n.Message{
+		ID: "ConfigDialogDestroyLabel",
+		Other: "Destroy this game",
+	}
 )
 
 // 参加取消の選択肢
@@ -55,22 +110,22 @@ func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 	d.API.LogDebug("openJoinDialog is called")
 
 	l := d.plugin.GetLocalizer(game.Language)
-	dialogTitle := d.plugin.Localize(l, "JoinDialogTitle", nil)
-	submitLabel := d.plugin.Localize(l, "JoinDialogSubmitLabel", nil)
-	cancelLabel := d.plugin.Localize(l, "JoinDialogCancelLabel", nil)
+	dialogTitle := d.plugin.Localize(l, joinDialogTitle, nil)
+	submitLabel := d.plugin.Localize(l, joinDialogSubmitLabel, nil)
+	cancelLabel := d.plugin.Localize(l, joinDialogCancelLabel, nil)
 
 	// ジャンケンで出せる手
 	var HandsOptions []*model.PostActionOptions = []*model.PostActionOptions{
 		{
-			Text:  d.plugin.Localize(l, "rock", nil),
+			Text:  d.plugin.Localize(l, handMessages["rock"], nil),
 			Value: "rock",
 		},
 		{
-			Text:  d.plugin.Localize(l, "scissors", nil),
+			Text:  d.plugin.Localize(l, handMessages["scissors"], nil),
 			Value: "scissors",
 		},
 		{
-			Text:  d.plugin.Localize(l, "paper", nil),
+			Text:  d.plugin.Localize(l, handMessages["paper"], nil),
 			Value: "paper",
 		},
 	}
@@ -85,16 +140,16 @@ func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 	for i := 0; i < game.MaxRounds; i++ {
 
 		i1 := i + 1  // 1-base index
-		displayName := d.plugin.Localize(l, "JoinDialogHandElementLabel", map[string]interface{}{
+		displayName := d.plugin.Localize(l, joinDialogHandElementLabel, map[string]interface{}{
 			"Index": i1,
 		})
 		name := fmt.Sprintf("hand%d", i1)
-		helpText := d.plugin.Localize(l, "JoinDialogHandElementHelp", map[string]interface{}{
+		helpText := d.plugin.Localize(l, joinDialogHandElementHelp, map[string]interface{}{
 			"Index": i1,
 		})
 
 		hand := participant.GetHand(i)
-		localizedHand := d.plugin.Localize(l, hand, nil)
+		localizedHand := d.plugin.Localize(l, handMessages[hand], nil)
 
 		elements = append(elements, model.DialogElement{
 			DisplayName: displayName,
@@ -160,10 +215,10 @@ func (d *ConfigDialog) Open(triggerId, postId string, game *JankenGame) {
 	}
 
 	l := d.plugin.GetLocalizer(game.Language)
-	dialogTitle := d.plugin.Localize(l, "ConfigDialogTitle", nil)
-	submitLabel := d.plugin.Localize(l, "ConfigDialogSubmitLabel", nil)
-	maxRoundsLabel := d.plugin.Localize(l, "ConfigDialogMaxRoundsLabel", nil)
-	destroyLabel := d.plugin.Localize(l, "ConfigDialogDestroyLabel", nil)
+	dialogTitle := d.plugin.Localize(l, configDialogTitle, nil)
+	submitLabel := d.plugin.Localize(l, configDialogSubmitLabel, nil)
+	maxRoundsLabel := d.plugin.Localize(l, configDialogMaxRoundsLabel, nil)
+	destroyLabel := d.plugin.Localize(l, configDialogDestroyLabel, nil)
 
 	elements := []model.DialogElement{
 		{

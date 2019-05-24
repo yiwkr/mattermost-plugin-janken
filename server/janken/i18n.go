@@ -42,9 +42,9 @@ func (p *Plugin) initBundle() (*i18n.Bundle, error) {
 	return bundle, nil
 }
 
-func (p *Plugin) Localize(l *i18n.Localizer, messageId string, templateData map[string]interface{}) string {
+func (p *Plugin) Localize(l *i18n.Localizer, defaultMessage *i18n.Message, templateData map[string]interface{}) string {
 	m := l.MustLocalize(&i18n.LocalizeConfig{
-		MessageID: messageId,
+		DefaultMessage: defaultMessage,
 		TemplateData: templateData,
 	})
 	return m
