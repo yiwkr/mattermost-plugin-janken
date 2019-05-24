@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/pkg/errors"
 )
 
@@ -19,6 +20,8 @@ type Plugin struct {
 	ServerConfig  *model.Config
 
 	store *Store
+
+	bundle *i18n.Bundle
 }
 
 const (
@@ -33,6 +36,13 @@ func (p *Plugin) OnActivate() error {
 		return errors.Wrap(err, "failed to init store")
 	}
 	p.store = store
+
+	bundle, err := p.initBundle()
+	if err != nil {
+		return err
+	}
+	p.bundle = bundle
+
 	return nil
 }
 

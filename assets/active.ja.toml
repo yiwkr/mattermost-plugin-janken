@@ -1,0 +1,103 @@
+[ConfigDialogDestroyLabel]
+hash = "sha1-212158223d9cad100f46c2c29a280af21d582a28"
+other = "ゲームの削除"
+
+[ConfigDialogMaxRoundsLabel]
+hash = "sha1-116ee54b2faa5d0d387383edb426c890d153161e"
+other = "最大ジャンケン回数"
+
+[ConfigDialogSubmitLabel]
+hash = "sha1-efc007a393f66cdb14d57d385822a3d9e36ef873"
+other = "保存"
+
+[ConfigDialogTitle]
+hash = "sha1-8851142da56fd885ce668a165b33fee7003e858d"
+other = "設定"
+
+[ConfigPermissionErrorMessage]
+hash = "sha1-0837eda5aabd185e3225d367ad8b0a6b52793d52"
+other = "設定ダイアログを開けませんでした。作成者か管理者のみが設定を変更できます"
+
+[HandsRegisteredMessage]
+hash = "sha1-cfe6e6a60b5645172300b86cbac279f3b8336b25"
+other = "あなたの手 {{.HandsStr}} はジャンケンゲーム ({{.ID}}) に登録されました"
+
+[JankenGameConfigButtonLabel]
+hash = "sha1-8851142da56fd885ce668a165b33fee7003e858d"
+other = "設定"
+
+[JankenGameDescription]
+hash = "sha1-7daa0d23c576b413a1c6e185622f27df5aca1d5d"
+other = "ジャンケンゲームに参加してください。\n参加者 ({{.ParticipantsNum}}): {{.ParticipantsStr}}"
+
+[JankenGameDestroyedMessage]
+hash = "sha1-5dd21ab001eb1d2ec5a28a0b99cc1096d6e27f9d"
+other = "このゲームは @{{.Username}} によって削除されました"
+
+[JankenGameJoinButtonLabel]
+hash = "sha1-e0d73143de80d17e82de2e017ac156ca3b9c4e01"
+other = "参加"
+
+[JankenGameResultButtonLabel]
+hash = "sha1-5faa59d4bc3756040b8ce9e673c09f929e6ee9ba"
+other = "結果"
+
+[JankenGameTitle]
+hash = "sha1-27250e736dfa1e291d7cf3d2fed4781e2534826e"
+other = "ジャンケンゲーム ({{.ID}}) created by @{{.Username}}"
+
+[JoinDialogCancelLabel]
+hash = "sha1-77dfd2135f4db726c47299bb55be26f7f4525a46"
+other = "参加の取り消し"
+
+[JoinDialogHandElementHelp]
+hash = "sha1-224286e783b32dfc9fa4dbc065d8acb08e765714"
+other = "{{.Index}}手目を選んでください。"
+
+[JoinDialogHandElementLabel]
+hash = "sha1-82a99e367bbb0c551a4e29b313aa5576f6780fe9"
+other = "{{.Index}}手目"
+
+[JoinDialogHandPaper]
+hash = "sha1-22d507f2ba74e43593de3ae3f550bf202c076adc"
+other = "パー"
+
+[JoinDialogHandRock]
+hash = "sha1-468d79c2e0229e3ef8a5592b4df3e148050fb828"
+other = "グー"
+
+[JoinDialogHandScissors]
+hash = "sha1-faf4c3ea4e2730f2e886b2ca47368bf27df1cf3e"
+other = "チョキ"
+
+[JoinDialogSubmitLabel]
+hash = "sha1-efc007a393f66cdb14d57d385822a3d9e36ef873"
+other = "保存"
+
+[JoinDialogTitle]
+hash = "sha1-9f230566933e33c6bd965dc5145000a994091bf5"
+other = "ジャンケンゲームへの参加"
+
+[ResultNotEnoughParticipantsErrorMessage]
+hash = "sha1-4e42957aad8cdb3c7908cbfeac323682c29a1d39"
+other = "ジャンケンゲームの結果を表示できませんでした。結果を表示するには最低2人の参加者が必要です"
+
+[ResultPermissionErrorMessage]
+hash = "sha1-5c2c5410d38c48e3b72fbddf452eb09891754287"
+other = "ジャンケンゲームの結果を表示できませんでした。作成者か管理者のみが結果を表示できます"
+
+[ResultTableHandsLabel]
+hash = "sha1-1f8e3c7cd3b8e378bb574499955f0cb0c10fd926"
+other = "手"
+
+[ResultTableRankLabel]
+hash = "sha1-dd48a1149548f0b07ddec97e040571c91978fbab"
+other = "順位"
+
+[ResultTableTitle]
+hash = "sha1-e991dae3e73b6c4cb81395de7afa647f5842a120"
+other = "**ジャンケンゲーム ({{.ID}})**\n結果\n"
+
+[ResultTableUsernameLabel]
+hash = "sha1-84c29015de33e5d22422382a372caba5c58f8c01"
+other = "ユーザー名"

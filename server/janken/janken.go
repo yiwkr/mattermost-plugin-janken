@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/mattermost/mattermost-server/model"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -14,9 +15,9 @@ const (
 
 // 英語名の手と日本語名の手の対応
 var Hands map[string]string = map[string]string{
-	"rock": "グー",
-	"scissors": "チョキ",
-	"paper": "パー",
+	"rock": "Rock",
+	"scissors": "Scissors",
+	"paper": "Paper",
 }
 
 // emojiとの対応
@@ -91,6 +92,7 @@ type JankenGame struct {
 	MaxParticipants int            `json:"max_participants"`
 	// 参加者
 	Participants    []*Participant `json:"participants"`
+	Language        string         `json:"language"`
 }
 
 func NewJankenGame() *JankenGame {
@@ -100,6 +102,7 @@ func NewJankenGame() *JankenGame {
 		Creator: "",
 		MaxRounds: 5,
 		Participants: make([]*Participant, 0),
+		Language: language.English.String(),
 	}
 }
 
