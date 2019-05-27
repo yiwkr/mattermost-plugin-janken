@@ -52,10 +52,10 @@ func (p *Plugin) OnDeactivate() error {
 
 func getCommand(trigger string) *model.Command {
 	return &model.Command{
-		Trigger: trigger,
-		DisplayName: "Janken",
-		Description: "Playing janken",
-		AutoComplete: true,
+		Trigger:          trigger,
+		DisplayName:      "Janken",
+		Description:      "Playing janken",
+		AutoComplete:     true,
 		AutoCompleteDesc: "Create a janken",
 	}
 }

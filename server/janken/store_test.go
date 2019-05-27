@@ -13,7 +13,7 @@ import (
 )
 
 func TestStore(t *testing.T) {
-	t.Run("NewStore", func(t *testing.T){
+	t.Run("NewStore", func(t *testing.T) {
 		assert := assert.New(t)
 		api := &plugintest.API{}
 
@@ -24,7 +24,7 @@ func TestStore(t *testing.T) {
 }
 
 func TestJankenStore(t *testing.T) {
-	t.Run("Get", func(t *testing.T){
+	t.Run("Get", func(t *testing.T) {
 		for name, test := range map[string]struct {
 			Id                  string
 			SetupAPI            func() *plugintest.API
@@ -44,7 +44,7 @@ func TestJankenStore(t *testing.T) {
 					return NewJankenGame(&TestJankenGameImpl{}), nil
 				},
 				ExpectedGame: NewJankenGame(&TestJankenGameImpl{}),
-				ShouldError: false,
+				ShouldError:  false,
 			},
 			"failed with invalid data": {
 				Id: "testId",
@@ -57,7 +57,7 @@ func TestJankenStore(t *testing.T) {
 					return nil, errors.New("error")
 				},
 				ExpectedGame: nil,
-				ShouldError: true,
+				ShouldError:  true,
 			},
 			"failed because KVGet returns model.AppError": {
 				Id: "testId",
@@ -70,10 +70,10 @@ func TestJankenStore(t *testing.T) {
 					return NewJankenGame(&TestJankenGameImpl{}), nil
 				},
 				ExpectedGame: nil,
-				ShouldError: true,
+				ShouldError:  true,
 			},
-		}{
-			t.Run(name, func(t *testing.T){
+		} {
+			t.Run(name, func(t *testing.T) {
 				assert := assert.New(t)
 				api := test.SetupAPI()
 				s := JankenStore{API: api}
@@ -102,11 +102,11 @@ func TestJankenStore(t *testing.T) {
 		}
 	})
 
-	t.Run("Save", func(t *testing.T){
+	t.Run("Save", func(t *testing.T) {
 		for name, test := range map[string]struct {
-			SetupAPI      func() *plugintest.API
-			SetupPatch    func() *monkey.PatchGuard
-			ShouldError   bool
+			SetupAPI    func() *plugintest.API
+			SetupPatch  func() *monkey.PatchGuard
+			ShouldError bool
 		}{
 			"successfully": {
 				SetupAPI: func() *plugintest.API {
@@ -142,8 +142,8 @@ func TestJankenStore(t *testing.T) {
 				},
 				ShouldError: true,
 			},
-		}{
-			t.Run(name, func(t *testing.T){
+		} {
+			t.Run(name, func(t *testing.T) {
 				assert := assert.New(t)
 				api := test.SetupAPI()
 				s := JankenStore{API: api}
@@ -165,11 +165,11 @@ func TestJankenStore(t *testing.T) {
 		}
 	})
 
-	t.Run("Delete", func(t *testing.T){
+	t.Run("Delete", func(t *testing.T) {
 		for name, test := range map[string]struct {
-			Id            string
-			SetupAPI      func() *plugintest.API
-			ShouldError   bool
+			Id          string
+			SetupAPI    func() *plugintest.API
+			ShouldError bool
 		}{
 			"successfully": {
 				Id: "testId",
@@ -191,8 +191,8 @@ func TestJankenStore(t *testing.T) {
 				},
 				ShouldError: true,
 			},
-		}{
-			t.Run(name, func(t *testing.T){
+		} {
+			t.Run(name, func(t *testing.T) {
 				assert := assert.New(t)
 				api := test.SetupAPI()
 				s := JankenStore{API: api}

@@ -10,7 +10,7 @@ import (
 )
 
 func TestPluginUtils(t *testing.T) {
-	t.Run("sendEphemeralPost", func(t *testing.T){
+	t.Run("sendEphemeralPost", func(t *testing.T) {
 		for name, test := range map[string]struct {
 			SetupAPI     func() *plugintest.API
 			ChannelId    string
@@ -25,11 +25,11 @@ func TestPluginUtils(t *testing.T) {
 					return api
 				},
 				ChannelId: "test_channel_id",
-				UserId: "test_user_id",
-				Message: "test_message",
+				UserId:    "test_user_id",
+				Message:   "test_message",
 			},
-		}{
-			t.Run(name, func(t *testing.T){
+		} {
+			t.Run(name, func(t *testing.T) {
 				api := test.SetupAPI()
 				p := &Plugin{}
 				p.SetAPI(api)
@@ -52,7 +52,7 @@ func TestAppendMessage(t *testing.T) {
 				Message: "original message",
 			},
 			AppendedMessage: "appended message",
-			Args: nil,
+			Args:            nil,
 			ExpectedMessage: "original message\nappended message",
 		},
 		"append message with args": {
@@ -60,11 +60,11 @@ func TestAppendMessage(t *testing.T) {
 				Message: "original message",
 			},
 			AppendedMessage: "appended message: %s=%d",
-			Args: []interface{}{"value", 1},
+			Args:            []interface{}{"value", 1},
 			ExpectedMessage: "original message\nappended message: value=1",
 		},
-	}{
-		t.Run(name, func(t *testing.T){
+	} {
+		t.Run(name, func(t *testing.T) {
 			assert := assert.New(t)
 
 			p := appendMessage(test.Post, test.AppendedMessage, test.Args...)

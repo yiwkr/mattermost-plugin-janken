@@ -16,7 +16,7 @@ func (p *Plugin) sendEphemeralPost(channelId, userId, message string) *model.Pos
 	return p.API.SendEphemeralPost(userId, post)
 }
 
-func appendMessage(post *model.Post, format string, args ...interface{}) (*model.Post) {
+func appendMessage(post *model.Post, format string, args ...interface{}) *model.Post {
 	message := fmt.Sprintf(format, args...)
 	post.Message = fmt.Sprintf("%s\n%s", post.Message, message)
 	return post

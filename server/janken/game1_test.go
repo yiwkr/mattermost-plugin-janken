@@ -7,7 +7,7 @@ import (
 )
 
 func TestJankenGameImpl1(t *testing.T) {
-	t.Run("GetResult", func(t *testing.T){
+	t.Run("GetResult", func(t *testing.T) {
 		for name, test := range map[string]struct {
 			MaxRounds     int
 			Participants  []*Participant
@@ -16,8 +16,8 @@ func TestJankenGameImpl1(t *testing.T) {
 			"get result successfully": {
 				MaxRounds: 2,
 				Participants: []*Participant{
-					{UserId: "p1", Hands: []string{"rock",     "scissors"}},
-					{UserId: "p2", Hands: []string{"rock",     "paper"}},
+					{UserId: "p1", Hands: []string{"rock", "scissors"}},
+					{UserId: "p2", Hands: []string{"rock", "paper"}},
 					{UserId: "p3", Hands: []string{"scissors", "paper"}},
 					{UserId: "p4", Hands: []string{"scissors", "rock"}},
 				},
@@ -35,14 +35,14 @@ func TestJankenGameImpl1(t *testing.T) {
 			"1 winner and 2 drawers": {
 				MaxRounds: 2,
 				Participants: []*Participant{
-					{UserId: "p1", Hands: []string{"rock",     "rock"}},
+					{UserId: "p1", Hands: []string{"rock", "rock"}},
 					{UserId: "p2", Hands: []string{"scissors", "rock"}},
 					{UserId: "p3", Hands: []string{"scissors", "rock"}},
 				},
 				ExpectedRanks: map[string]int{"p1": 1, "p2": 2, "p3": 2},
 			},
-		}{
-			t.Run(name, func(t *testing.T){
+		} {
+			t.Run(name, func(t *testing.T) {
 				assert := assert.New(t)
 				g := &JankenGameImpl1{}
 				b := NewJankenGame(g)
@@ -58,7 +58,7 @@ func TestJankenGameImpl1(t *testing.T) {
 		}
 	})
 
-	t.Run("nextRound", func(t *testing.T){
+	t.Run("nextRound", func(t *testing.T) {
 		for name, test := range map[string]struct {
 			MaxRounds            int
 			Participants         []*Participant
@@ -72,7 +72,7 @@ func TestJankenGameImpl1(t *testing.T) {
 					{UserId: "p1", Hands: []string{"rock", "rock"}},
 				},
 				Round: 1,
-				Rank: 1,
+				Rank:  1,
 				ExpectedParticipants: []*Participant{
 					{UserId: "p1", Hands: []string{"rock", ""}, Rank: 1},
 				},
@@ -84,7 +84,7 @@ func TestJankenGameImpl1(t *testing.T) {
 					{UserId: "p2", Hands: []string{"rock", "rock"}},
 				},
 				Round: 2,
-				Rank: 2,
+				Rank:  2,
 				ExpectedParticipants: []*Participant{
 					{UserId: "p1", Hands: []string{"rock", "rock"}, Rank: 2},
 					{UserId: "p2", Hands: []string{"rock", "rock"}, Rank: 2},
@@ -97,7 +97,7 @@ func TestJankenGameImpl1(t *testing.T) {
 					{UserId: "p2", Hands: []string{"rock"}},
 				},
 				Round: 0,
-				Rank: 1,
+				Rank:  1,
 				ExpectedParticipants: []*Participant{
 					{UserId: "p1", Hands: []string{"rock"}, Rank: 1},
 					{UserId: "p2", Hands: []string{"rock"}, Rank: 1},
@@ -110,14 +110,14 @@ func TestJankenGameImpl1(t *testing.T) {
 					{UserId: "p2", Hands: []string{"scissors"}},
 				},
 				Round: 0,
-				Rank: 1,
+				Rank:  1,
 				ExpectedParticipants: []*Participant{
 					{UserId: "p1", Hands: []string{"rock"}, Rank: 1},
 					{UserId: "p2", Hands: []string{"scissors"}, Rank: 2},
 				},
 			},
-		}{
-			t.Run(name, func(t *testing.T){
+		} {
+			t.Run(name, func(t *testing.T) {
 				assert := assert.New(t)
 				g := &JankenGameImpl1{}
 

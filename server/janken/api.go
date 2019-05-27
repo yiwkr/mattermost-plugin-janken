@@ -15,27 +15,27 @@ import (
 
 var (
 	handsRegisteredMessage = &i18n.Message{
-		ID: "HandsRegisteredMessage",
+		ID:    "HandsRegisteredMessage",
 		Other: "Your hands {{.HandsStr}} are registered with janken game ({{.ID}}).",
 	}
 	resultPermissionErrorMessage = &i18n.Message{
-		ID: "ResultPermissionErrorMessage",
+		ID:    "ResultPermissionErrorMessage",
 		Other: "Failed to show the result of the janken game. The creator of this game or the administrator can show the result.",
 	}
 	resultNotEnoughParticipantsErrorMessage = &i18n.Message{
-		ID: "ResultNotEnoughParticipantsErrorMessage",
+		ID:    "ResultNotEnoughParticipantsErrorMessage",
 		Other: "Failed to show the result of the janken game. Least 2 pariticipants are required.",
 	}
 	resultTableRankLabel = &i18n.Message{
-		ID: "ResultTableRankLabel",
+		ID:    "ResultTableRankLabel",
 		Other: "Rank",
 	}
 	resultTableUsernameLabel = &i18n.Message{
-		ID: "ResultTableUsernameLabel",
+		ID:    "ResultTableUsernameLabel",
 		Other: "Username",
 	}
 	resultTableHandsLabel = &i18n.Message{
-		ID: "ResultTableHandsLabel",
+		ID:    "ResultTableHandsLabel",
 		Other: "Hands",
 	}
 	resultTableTitle = &i18n.Message{
@@ -45,15 +45,15 @@ Result
 `,
 	}
 	configPermissionErrorMessage = &i18n.Message{
-		ID: "ConfigPermissionErrorMessage",
+		ID:    "ConfigPermissionErrorMessage",
 		Other: "Failed to open the configration dialog. The creator of this game or the administrator can configure the game.",
 	}
 	jankenGameDestroyedMessage = &i18n.Message{
-		ID: "JankenGameDestroyedMessage",
+		ID:    "JankenGameDestroyedMessage",
 		Other: "This janken game was destroyed by @{{.Username}}.",
 	}
 	failedToGetStoredGameErrorMessage = &i18n.Message{
-		ID: "FailedToGetStoredGameErrorMessage",
+		ID:    "FailedToGetStoredGameErrorMessage",
 		Other: "Failed to get stored game data. Try to create another game.",
 	}
 )
@@ -168,7 +168,7 @@ func (p *Plugin) handleJoinSubmit(w http.ResponseWriter, r *http.Request) {
 		// show registered hands
 		participant := game.GetParticipant(userId)
 		hands_emoji := make([]string, game.MaxRounds)
-		for i := 0; i<game.MaxRounds; i++ {
+		for i := 0; i < game.MaxRounds; i++ {
 			hands_emoji[i] = HandIcons[participant.GetHand(i)]
 		}
 		hands_str := strings.Join(hands_emoji, " ")
@@ -177,7 +177,7 @@ func (p *Plugin) handleJoinSubmit(w http.ResponseWriter, r *http.Request) {
 		l := p.GetLocalizer(game.Language)
 		message := Localize(l, handsRegisteredMessage, map[string]interface{}{
 			"HandsStr": hands_str,
-			"ID": id,
+			"ID":       id,
 		})
 
 		p.sendEphemeralPost(post.ChannelId, userId, message)

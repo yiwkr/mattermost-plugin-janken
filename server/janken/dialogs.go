@@ -11,54 +11,54 @@ import (
 
 var handMessages = map[string]*i18n.Message{
 	"rock": &i18n.Message{
-		ID: "JoinDialogHandRock",
+		ID:    "JoinDialogHandRock",
 		Other: "Rock",
 	},
 	"scissors": &i18n.Message{
-		ID: "JoinDialogHandScissors",
+		ID:    "JoinDialogHandScissors",
 		Other: "Scissors",
 	},
 	"paper": &i18n.Message{
-		ID: "JoinDialogHandPaper",
+		ID:    "JoinDialogHandPaper",
 		Other: "Paper",
 	},
 }
 
 var (
 	joinDialogTitle = &i18n.Message{
-		ID: "JoinDialogTitle",
+		ID:    "JoinDialogTitle",
 		Other: "Join the janken game",
 	}
 	joinDialogSubmitLabel = &i18n.Message{
-		ID: "JoinDialogSubmitLabel",
+		ID:    "JoinDialogSubmitLabel",
 		Other: "Save",
 	}
 	joinDialogCancelLabel = &i18n.Message{
-		ID: "JoinDialogCancelLabel",
+		ID:    "JoinDialogCancelLabel",
 		Other: "Cancel",
 	}
 	joinDialogHandElementLabel = &i18n.Message{
-		ID: "JoinDialogHandElementLabel",
+		ID:    "JoinDialogHandElementLabel",
 		Other: "Hand {{.Index}}",
 	}
 	joinDialogHandElementHelp = &i18n.Message{
-		ID: "JoinDialogHandElementHelp",
+		ID:    "JoinDialogHandElementHelp",
 		Other: "Choose hand {{.Index}}",
 	}
 	configDialogTitle = &i18n.Message{
-		ID: "ConfigDialogTitle",
+		ID:    "ConfigDialogTitle",
 		Other: "Config",
 	}
 	configDialogSubmitLabel = &i18n.Message{
-		ID: "ConfigDialogSubmitLabel",
+		ID:    "ConfigDialogSubmitLabel",
 		Other: "Save",
 	}
 	configDialogMaxRoundsLabel = &i18n.Message{
-		ID: "ConfigDialogMaxRoundsLabel",
+		ID:    "ConfigDialogMaxRoundsLabel",
 		Other: "Max rounds",
 	}
 	configDialogDestroyLabel = &i18n.Message{
-		ID: "ConfigDialogDestroyLabel",
+		ID:    "ConfigDialogDestroyLabel",
 		Other: "Destroy this game",
 	}
 )
@@ -66,11 +66,11 @@ var (
 // 参加取消の選択肢
 var CancelOptions []*model.PostActionOptions = []*model.PostActionOptions{
 	{
-		Text: "-",
+		Text:  "-",
 		Value: "false",
 	},
 	{
-		Text: "cancel",
+		Text:  "cancel",
 		Value: "true",
 	},
 }
@@ -78,11 +78,11 @@ var CancelOptions []*model.PostActionOptions = []*model.PostActionOptions{
 // ゲーム削除の選択肢
 var DestroyOptions []*model.PostActionOptions = []*model.PostActionOptions{
 	{
-		Text: "-",
+		Text:  "-",
 		Value: "false",
 	},
 	{
-		Text: "destroy",
+		Text:  "destroy",
 		Value: "true",
 	},
 }
@@ -95,7 +95,7 @@ type Dialog struct {
 }
 
 // JoinDialogは"参加"ボタンが押されたときに開くダイアログ
-type JoinDialog struct { Dialog }
+type JoinDialog struct{ Dialog }
 
 func NewJoinDialog(api plugin.API, siteURL, pluginId string, plugin *Plugin) *JoinDialog {
 	d := &JoinDialog{}
@@ -139,7 +139,7 @@ func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 	elements := []model.DialogElement{}
 	for i := 0; i < game.MaxRounds; i++ {
 
-		i1 := i + 1  // 1-base index
+		i1 := i + 1 // 1-base index
 		displayName := Localize(l, joinDialogHandElementLabel, map[string]interface{}{
 			"Index": i1,
 		})
@@ -192,7 +192,7 @@ func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 }
 
 // ConfigDialogは"設定"ボタンが押されたときに開くダイアログ
-type ConfigDialog struct { Dialog }
+type ConfigDialog struct{ Dialog }
 
 func NewConfigDialog(api plugin.API, siteURL, pluginId string, plugin *Plugin) *ConfigDialog {
 	d := &ConfigDialog{}

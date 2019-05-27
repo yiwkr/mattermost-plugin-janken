@@ -17,7 +17,7 @@ const (
 
 var (
 	jankenGameTitle = &i18n.Message{
-		ID: "JankenGameTitle",
+		ID:    "JankenGameTitle",
 		Other: "Janken Game ({{.ID}}) created by @{{.Username}}",
 	}
 	jankenGameDescription = &i18n.Message{
@@ -26,15 +26,15 @@ var (
 Participants ({{.ParticipantsNum}}): {{.ParticipantsStr}}`,
 	}
 	jankenGameJoinButtonLabel = &i18n.Message{
-		ID: "JankenGameJoinButtonLabel",
+		ID:    "JankenGameJoinButtonLabel",
 		Other: "Join",
 	}
 	jankenGameConfigButtonLabel = &i18n.Message{
-		ID: "JankenGameConfigButtonLabel",
+		ID:    "JankenGameConfigButtonLabel",
 		Other: "Config",
 	}
 	jankenGameResultButtonLabel = &i18n.Message{
-		ID: "JankenGameResultButtonLabel",
+		ID:    "JankenGameResultButtonLabel",
 		Other: "Result",
 	}
 )
@@ -110,7 +110,7 @@ func (p *Plugin) parseArgs(command string) (*ParsedArgs, error) {
 			option := strings.TrimPrefix(args[i], "-")
 			switch {
 			case option == "l":
-				if i >= len(args) - 1 {
+				if i >= len(args)-1 {
 					return nil, errors.New(fmt.Sprintf(`"-l" option requires a value, "en" or "ja".`))
 				}
 				parsedArgs.Language = args[i+1]
@@ -161,7 +161,7 @@ func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *Janken
 	l := p.GetLocalizer(game.Language)
 	// get localized messages
 	title := Localize(l, jankenGameTitle, map[string]interface{}{
-		"ID": game.GetShortId(),
+		"ID":       game.GetShortId(),
 		"Username": username,
 	})
 	description := Localize(l, jankenGameDescription, map[string]interface{}{
@@ -173,9 +173,9 @@ func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *Janken
 	resultButtonLabel := Localize(l, jankenGameResultButtonLabel, nil)
 
 	attachments := []*model.SlackAttachment{{
-		Title:      title,
-		Text:       description,
-		Actions:    []*model.PostAction{
+		Title: title,
+		Text:  description,
+		Actions: []*model.PostAction{
 			{
 				Name: joinButtonLabel,
 				Type: model.POST_ACTION_TYPE_BUTTON,
@@ -196,7 +196,7 @@ func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *Janken
 				Name: resultButtonLabel,
 				Type: model.POST_ACTION_TYPE_BUTTON,
 				Integration: &model.PostActionIntegration{
-					URL: fmt.Sprintf("%s/plugins/%s/api/v1/janken/result", siteURL, pluginId),
+					URL:     fmt.Sprintf("%s/plugins/%s/api/v1/janken/result", siteURL, pluginId),
 					Context: context,
 				},
 			},
@@ -225,9 +225,9 @@ func (p *Plugin) getCommandUsage() string {
 func NewCommandResponse(responseType, text string, attachments []*model.SlackAttachment) *model.CommandResponse {
 	response := &model.CommandResponse{
 		ResponseType: responseType,
-		Text: text,
-		Username: COMMAND_RESPONSE_USERNAME,
-		Attachments: attachments,
+		Text:         text,
+		Username:     COMMAND_RESPONSE_USERNAME,
+		Attachments:  attachments,
 	}
 	return response
 }

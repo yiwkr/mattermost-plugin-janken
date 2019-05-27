@@ -8,14 +8,14 @@ import (
 
 const (
 	// データ保存期間(1週間=60秒*60分*24時間*7日間=604800秒)
-	expireInSeconds int64  = 604800
+	expireInSeconds int64 = 604800
 
-	KeyPrefix       string = "janken_"
+	KeyPrefix string = "janken_"
 )
 
 type Store struct {
-	API          plugin.API
-	jankenStore  JankenStoreInterface
+	API         plugin.API
+	jankenStore JankenStoreInterface
 }
 
 func NewStore(api plugin.API) *Store {
@@ -37,12 +37,13 @@ type JankenStoreInterface interface {
 type JankenStore struct {
 	API plugin.API
 }
+
 /*
 Getは指定したidに対応するJankenGameを取得する．
 指定したidが存在しない場合、新しい構造体を返す．
 */
 func (s JankenStore) Get(id string) (*JankenGame, error) {
-	b, appErr := s.API.KVGet(KeyPrefix+id)
+	b, appErr := s.API.KVGet(KeyPrefix + id)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -69,5 +70,5 @@ func (s JankenStore) Save(game *JankenGame) error {
 
 func (s JankenStore) Delete(id string) error {
 	s.API.LogDebug("Delete", "id", id)
-	return s.API.KVDelete(KeyPrefix+id)
+	return s.API.KVDelete(KeyPrefix + id)
 }

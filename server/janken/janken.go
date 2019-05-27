@@ -13,22 +13,22 @@ import (
 )
 
 const (
-	MAX_HANDS = 10
+	MAX_HANDS          = 10
 	DEFAULT_MAX_ROUNDS = 5
 )
 
 // 英語名の手と日本語名の手の対応
 var Hands = map[string]string{
-	"rock": "Rock",
+	"rock":     "Rock",
 	"scissors": "Scissors",
-	"paper": "Paper",
+	"paper":    "Paper",
 }
 
 // emojiとの対応
 var HandIcons = map[string]string{
-	"rock": ":fist_raised:",
+	"rock":     ":fist_raised:",
 	"scissors": ":v:",
-	"paper": ":hand:",
+	"paper":    ":hand:",
 }
 
 var NewJankenGameFuncMapping = map[string](func() JankenGameInterface){
@@ -37,18 +37,18 @@ var NewJankenGameFuncMapping = map[string](func() JankenGameInterface){
 
 type Participant struct {
 	// MattermostのUserId
-	UserId          string         `json:"user_id"`
+	UserId string `json:"user_id"`
 	// N回戦目までに出す手
-	Hands           []string       `json:"hands"`
+	Hands []string `json:"hands"`
 	// 順位
-	Rank            int            `json:"rank"`
+	Rank int `json:"rank"`
 }
 
 func NewParticipant(userId string) *Participant {
 	return &Participant{
 		UserId: userId,
-		Hands: make([]string, MAX_HANDS),  // 事前に全要素を初期化
-		Rank: 0,
+		Hands:  make([]string, MAX_HANDS), // 事前に全要素を初期化
+		Rank:   0,
 	}
 }
 
@@ -58,7 +58,7 @@ func (p *Participant) SetHands(hands []string) {
 
 // ClearHandsAfterは指定したi番目以降の手を空文字("")で初期化する
 func (p *Participant) ClearHandsAfter(i int) {
-	for j := i; j<len(p.Hands); j++ {
+	for j := i; j < len(p.Hands); j++ {
 		p.Hands[j] = ""
 	}
 }
@@ -72,8 +72,8 @@ func (p *Participant) GetHand(i int) string {
 
 	if hand == "" {
 		/*
-		Goのmapは実行ごとに異なる順番で要素を取り出すため
-		Handsの最初の1つを取り出せばランダムに手を取得できる
+			Goのmapは実行ごとに異なる順番で要素を取り出すため
+			Handsの最初の1つを取り出せばランダムに手を取得できる
 		*/
 		for h := range Hands {
 			hand = h
@@ -103,7 +103,7 @@ func JankenGameFromBytes(b []byte) (*JankenGame, error) {
 
 	f := NewJankenGameFuncMapping[gameType.(string)]
 	if f == nil {
-		return nil, errors.New("failed to get function: "+gameType.(string))
+		return nil, errors.New("failed to get function: " + gameType.(string))
 	}
 	impl := f()
 	g := NewJankenGame(impl)
@@ -113,32 +113,32 @@ func JankenGameFromBytes(b []byte) (*JankenGame, error) {
 
 type JankenGame struct {
 	// ID
-	Id              string              `json:"id"`
+	Id string `json:"id"`
 	// 作成日時
-	CreatedAt       int64               `json:"created_at"`
+	CreatedAt int64 `json:"created_at"`
 	// 作成日時
-	PostId          string              `json:"post_id"`
+	PostId string `json:"post_id"`
 	// 作成者
-	Creator         string              `json:"creator"`
+	Creator string `json:"creator"`
 	// 最大対戦回数
-	MaxRounds       int                 `json:"max_rounds"`
+	MaxRounds int `json:"max_rounds"`
 	// 最大参加人数
-	MaxParticipants int                 `json:"max_participants"`
+	MaxParticipants int `json:"max_participants"`
 	// 参加者
-	Participants    []*Participant      `json:"participants"`
-	Language        string              `json:"language"`
-	GameType        string              `json:"game_type"`
-	Impl            JankenGameInterface `json:"impl"`
+	Participants []*Participant      `json:"participants"`
+	Language     string              `json:"language"`
+	GameType     string              `json:"game_type"`
+	Impl         JankenGameInterface `json:"impl"`
 }
 
 func NewJankenGame(impl JankenGameInterface) *JankenGame {
 	g := &JankenGame{
-		Id: model.NewId(),
-		CreatedAt: model.GetMillis(),
-		Creator: "",
-		MaxRounds: DEFAULT_MAX_ROUNDS,
+		Id:           model.NewId(),
+		CreatedAt:    model.GetMillis(),
+		Creator:      "",
+		MaxRounds:    DEFAULT_MAX_ROUNDS,
 		Participants: make([]*Participant, 0),
-		Language: language.English.String(),
+		Language:     language.English.String(),
 	}
 	g.Impl = impl
 	g.SetGameType(impl)
@@ -149,7 +149,7 @@ func (g *JankenGame) SetGameType(impl JankenGameInterface) {
 	// ["*janken", "JankenGameImpl1"]
 	split_type := strings.Split(reflect.TypeOf(impl).String(), ".")
 	// "JankenGameImpl1"
-	g.GameType = split_type[len(split_type) - 1]
+	g.GameType = split_type[len(split_type)-1]
 }
 
 func (g *JankenGame) GetResult() []*Participant {

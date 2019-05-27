@@ -1,7 +1,6 @@
 package janken
 
-import (
-)
+import ()
 
 type JankenGameImpl1 struct {
 	JankenGameBase
@@ -14,7 +13,7 @@ func NewJankenGameImpl1() JankenGameInterface {
 // GetResultは最大maxRoundsのジャンケンの結果を返す．
 // 結果は[]interface{}（各要素はinterface{}{int, Participant}]．最初の要素は順位、次の要素はParticipant）
 func (g *JankenGameImpl1) GetResult(game *JankenGame) []*Participant {
-	start_round := 0  // Handsの利用開始番号
+	start_round := 0 // Handsの利用開始番号
 	start_rank := 1  // 順位の開始番号
 	result := g.nextRound(game.Participants, game.MaxRounds, start_round, start_rank, nil)
 	return result
@@ -37,8 +36,8 @@ func (g *JankenGameImpl1) nextRound(participants []*Participant, maxRounds, roun
 	}
 
 	/*
-	終了条件1: 勝者or敗者1人になった場合
-	participantsに残っている1人をresultに格納する
+		終了条件1: 勝者or敗者1人になった場合
+		participantsに残っている1人をresultに格納する
 	*/
 	if len(participants) == 1 {
 		participants[0].Rank = rank
@@ -48,8 +47,8 @@ func (g *JankenGameImpl1) nextRound(participants []*Participant, maxRounds, roun
 	}
 
 	/*
-	終了条件2: 最大対戦回数に達した場合
-	今残っているparticipantsをすべて同じ順位でresultに格納する
+		終了条件2: 最大対戦回数に達した場合
+		今残っているparticipantsをすべて同じ順位でresultに格納する
 	*/
 	if round >= maxRounds {
 		for _, p := range participants {
@@ -73,4 +72,3 @@ func (g *JankenGameImpl1) nextRound(participants []*Participant, maxRounds, roun
 	}
 	return result
 }
-

@@ -13,7 +13,6 @@ import (
 
 var defaultLanguage language.Tag = language.English
 
-
 func (p *Plugin) initBundle() (*i18n.Bundle, error) {
 	bundle := i18n.NewBundle(defaultLanguage)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
@@ -49,7 +48,7 @@ func (p *Plugin) GetLocalizer(tag string) *i18n.Localizer {
 func Localize(l *i18n.Localizer, defaultMessage *i18n.Message, templateData map[string]interface{}) string {
 	m := l.MustLocalize(&i18n.LocalizeConfig{
 		DefaultMessage: defaultMessage,
-		TemplateData: templateData,
+		TemplateData:   templateData,
 	})
 	return m
 }
