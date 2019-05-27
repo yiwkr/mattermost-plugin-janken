@@ -55,4 +55,4 @@ endif
 
 .PHONY: test
 test: dep
-	$(GO) test -v -race -gcflags=-l -coverprofile=coverage.out `go list ./...` && go tool cover -html=coverage.out -o coverage.html
+	$(GO) test -race -gcflags=-l -coverprofile=coverage.out `go list ./...` && go tool cover -html=coverage.out -o coverage.html
