@@ -11,6 +11,10 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
+const (
+	COMMAND_RESPONSE_USERNAME = "mattermost-plugin-janken"
+)
+
 var (
 	jankenGameTitle = &i18n.Message{
 		ID: "JankenGameTitle",
@@ -57,15 +61,20 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 		return response, nil
 	}
 
-	game := NewJankenGame()
+	game := NewJankenGame(&JankenGameImpl1{})
 	game.Creator = args.UserId
 	game.Language = parsedArgs.Language
-	p.store.jankenStore.Save(game)
+	err = p.store.jankenStore.Save(game)
+	if err != nil {
+		errmsg := fmt.Sprintf("Failed to store game data.: %s", err.Error())
+		response := NewCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, errmsg, nil)
+		return response, nil
+	}
 
 	if !p.isValidLanguage(game.Language) {
 		defaultLanguageStr := defaultLanguage.String()
 		message := fmt.Sprintf(`Language "%s" is not available. "%s" is used instead.`, game.Language, defaultLanguageStr)
-		p.SendEphemeralPost(args.ChannelId, args.UserId, message)
+		p.sendEphemeralPost(args.ChannelId, args.UserId, message)
 		game.Language = defaultLanguageStr
 	}
 
@@ -151,17 +160,17 @@ func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *Janken
 
 	l := p.GetLocalizer(game.Language)
 	// get localized messages
-	title := p.Localize(l, jankenGameTitle, map[string]interface{}{
+	title := Localize(l, jankenGameTitle, map[string]interface{}{
 		"ID": game.GetShortId(),
 		"Username": username,
 	})
-	description := p.Localize(l, jankenGameDescription, map[string]interface{}{
+	description := Localize(l, jankenGameDescription, map[string]interface{}{
 		"ParticipantsNum": len(participants),
 		"ParticipantsStr": participants_str,
 	})
-	joinButtonLabel := p.Localize(l, jankenGameJoinButtonLabel, nil)
-	configButtonLabel := p.Localize(l, jankenGameConfigButtonLabel, nil)
-	resultButtonLabel := p.Localize(l, jankenGameResultButtonLabel, nil)
+	joinButtonLabel := Localize(l, jankenGameJoinButtonLabel, nil)
+	configButtonLabel := Localize(l, jankenGameConfigButtonLabel, nil)
+	resultButtonLabel := Localize(l, jankenGameResultButtonLabel, nil)
 
 	attachments := []*model.SlackAttachment{{
 		Title:      title,
@@ -217,7 +226,7 @@ func NewCommandResponse(responseType, text string, attachments []*model.SlackAtt
 	response := &model.CommandResponse{
 		ResponseType: responseType,
 		Text: text,
-		Username: "mattermost-plugin-janken",
+		Username: COMMAND_RESPONSE_USERNAME,
 		Attachments: attachments,
 	}
 	return response

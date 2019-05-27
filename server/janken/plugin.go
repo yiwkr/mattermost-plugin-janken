@@ -31,17 +31,13 @@ const (
 // OnAcrivate registers the plugin command
 func (p *Plugin) OnActivate() error {
 	p.router = p.InitAPI()
-	store, err := NewStore(p.API)
-	if err != nil {
-		return errors.Wrap(err, "failed to init store")
-	}
-	p.store = store
+	p.store = NewStore(p.API)
 
-	bundle, err := p.initBundle()
-	if err != nil {
+	if bundle, err := p.initBundle(); err != nil {
 		return err
+	} else {
+		p.bundle = bundle
 	}
-	p.bundle = bundle
 
 	return nil
 }

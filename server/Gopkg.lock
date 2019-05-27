@@ -18,6 +18,14 @@
   version = "v3.6.1"
 
 [[projects]]
+  digest = "1:d8abdc866ebbe05fa3bce50863e23afd4c73c804b90c908caa864e86df1db8a1"
+  name = "github.com/bouk/monkey"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "5df1f207ff77e025801505ae4d903133a0b4353f"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
@@ -118,12 +126,13 @@
   revision = "95032a82bc518f77982ea72343cc1ade730072f0"
 
 [[projects]]
-  digest = "1:1df0af64927b4132388fafb2904e7ba424c333e775599e57a807e3007ae6cfa4"
+  digest = "1:088889159931db9f7117c38bb8cc6b57629ec741b89a57d9a9d652c878ed272a"
   name = "github.com/mattermost/mattermost-server"
   packages = [
     "mlog",
     "model",
     "plugin",
+    "plugin/plugintest",
     "services/timezones",
     "utils",
     "utils/fileutils",
@@ -199,9 +208,20 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:972c2427413d41a1e06ca4897e8528e5a1622894050e2f527b38ddf0f343f759"
+  digest = "1:ac83cf90d08b63ad5f7e020ef480d319ae890c208f8524622a2f3136e2686b02"
+  name = "github.com/stretchr/objx"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "477a77ecc69700c7cdeb1fa9e129548e1c1c393c"
+  version = "v0.1.1"
+
+[[projects]]
+  digest = "1:0bcc464dabcfad5393daf87c3f8142911d0f6c52569b837e91a1c15e890265f3"
   name = "github.com/stretchr/testify"
-  packages = ["assert"]
+  packages = [
+    "assert",
+    "mock",
+  ]
   pruneopts = "UT"
   revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
   version = "v1.3.0"
@@ -379,13 +399,16 @@
   analyzer-version = 1
   input-imports = [
     "github.com/BurntSushi/toml",
+    "github.com/bouk/monkey",
     "github.com/gorilla/mux",
     "github.com/kballard/go-shellquote",
     "github.com/mattermost/mattermost-server/model",
     "github.com/mattermost/mattermost-server/plugin",
+    "github.com/mattermost/mattermost-server/plugin/plugintest",
     "github.com/nicksnyder/go-i18n/v2/i18n",
     "github.com/pkg/errors",
     "github.com/stretchr/testify/assert",
+    "github.com/stretchr/testify/mock",
     "golang.org/x/text/language",
   ]
   solver-name = "gps-cdcl"

@@ -54,5 +54,5 @@ else
 endif
 
 .PHONY: test
-test:
-	cd server && $(GO) test -race -gcflags=-l `go list ./... | grep -v vendor/`
+test: dep
+	$(GO) test -v -race -gcflags=-l -coverprofile=coverage.out `go list ./...` && go tool cover -html=coverage.out -o coverage.html

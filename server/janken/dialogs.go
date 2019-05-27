@@ -110,22 +110,22 @@ func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 	d.API.LogDebug("openJoinDialog is called")
 
 	l := d.plugin.GetLocalizer(game.Language)
-	dialogTitle := d.plugin.Localize(l, joinDialogTitle, nil)
-	submitLabel := d.plugin.Localize(l, joinDialogSubmitLabel, nil)
-	cancelLabel := d.plugin.Localize(l, joinDialogCancelLabel, nil)
+	dialogTitle := Localize(l, joinDialogTitle, nil)
+	submitLabel := Localize(l, joinDialogSubmitLabel, nil)
+	cancelLabel := Localize(l, joinDialogCancelLabel, nil)
 
 	// ジャンケンで出せる手
 	var HandsOptions []*model.PostActionOptions = []*model.PostActionOptions{
 		{
-			Text:  d.plugin.Localize(l, handMessages["rock"], nil),
+			Text:  Localize(l, handMessages["rock"], nil),
 			Value: "rock",
 		},
 		{
-			Text:  d.plugin.Localize(l, handMessages["scissors"], nil),
+			Text:  Localize(l, handMessages["scissors"], nil),
 			Value: "scissors",
 		},
 		{
-			Text:  d.plugin.Localize(l, handMessages["paper"], nil),
+			Text:  Localize(l, handMessages["paper"], nil),
 			Value: "paper",
 		},
 	}
@@ -140,16 +140,16 @@ func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 	for i := 0; i < game.MaxRounds; i++ {
 
 		i1 := i + 1  // 1-base index
-		displayName := d.plugin.Localize(l, joinDialogHandElementLabel, map[string]interface{}{
+		displayName := Localize(l, joinDialogHandElementLabel, map[string]interface{}{
 			"Index": i1,
 		})
 		name := fmt.Sprintf("hand%d", i1)
-		helpText := d.plugin.Localize(l, joinDialogHandElementHelp, map[string]interface{}{
+		helpText := Localize(l, joinDialogHandElementHelp, map[string]interface{}{
 			"Index": i1,
 		})
 
 		hand := participant.GetHand(i)
-		localizedHand := d.plugin.Localize(l, handMessages[hand], nil)
+		localizedHand := Localize(l, handMessages[hand], nil)
 
 		elements = append(elements, model.DialogElement{
 			DisplayName: displayName,
@@ -215,10 +215,10 @@ func (d *ConfigDialog) Open(triggerId, postId string, game *JankenGame) {
 	}
 
 	l := d.plugin.GetLocalizer(game.Language)
-	dialogTitle := d.plugin.Localize(l, configDialogTitle, nil)
-	submitLabel := d.plugin.Localize(l, configDialogSubmitLabel, nil)
-	maxRoundsLabel := d.plugin.Localize(l, configDialogMaxRoundsLabel, nil)
-	destroyLabel := d.plugin.Localize(l, configDialogDestroyLabel, nil)
+	dialogTitle := Localize(l, configDialogTitle, nil)
+	submitLabel := Localize(l, configDialogSubmitLabel, nil)
+	maxRoundsLabel := Localize(l, configDialogMaxRoundsLabel, nil)
+	destroyLabel := Localize(l, configDialogDestroyLabel, nil)
 
 	elements := []model.DialogElement{
 		{

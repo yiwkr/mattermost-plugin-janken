@@ -3,28 +3,36 @@ package janken
 
 import (
 	"encoding/json"
+	"errors"
+	"reflect"
 	"sort"
+	"strings"
 
 	"github.com/mattermost/mattermost-server/model"
 	"golang.org/x/text/language"
 )
 
 const (
-	MAX_HANDS int = 10
+	MAX_HANDS = 10
+	DEFAULT_MAX_ROUNDS = 5
 )
 
 // 英語名の手と日本語名の手の対応
-var Hands map[string]string = map[string]string{
+var Hands = map[string]string{
 	"rock": "Rock",
 	"scissors": "Scissors",
 	"paper": "Paper",
 }
 
 // emojiとの対応
-var HandIcons map[string]string = map[string]string{
+var HandIcons = map[string]string{
 	"rock": ":fist_raised:",
 	"scissors": ":v:",
 	"paper": ":hand:",
+}
+
+var NewJankenGameFuncMapping = map[string](func() JankenGameInterface){
+	"JankenGameImpl1": NewJankenGameImpl1,
 }
 
 type Participant struct {
@@ -77,47 +85,83 @@ func (p *Participant) GetHand(i int) string {
 	return hand
 }
 
-type JankenGame struct {
-	// ID
-	Id              string         `json:"id"`
-	// 作成日時
-	CreatedAt       int64          `json:"created_at"`
-	// 作成日時
-	PostId          string         `json:"post_id"`
-	// 作成者
-	Creator         string         `json:"creator"`
-	// 最大対戦回数
-	MaxRounds       int            `json:"max_rounds"`
-	// 最大参加人数
-	MaxParticipants int            `json:"max_participants"`
-	// 参加者
-	Participants    []*Participant `json:"participants"`
-	Language        string         `json:"language"`
+type JankenGameInterface interface {
+	GetResult(g *JankenGame) []*Participant
 }
 
-func NewJankenGame() *JankenGame {
-	return &JankenGame{
+type JankenGameBase struct {
+	base *JankenGame
+}
+
+func JankenGameFromBytes(b []byte) (*JankenGame, error) {
+	var tmp interface{}
+	json.Unmarshal(b, &tmp)
+	gameType := tmp.(map[string]interface{})["game_type"]
+	if gameType == nil {
+		return nil, errors.New("failed to get game type")
+	}
+
+	f := NewJankenGameFuncMapping[gameType.(string)]
+	if f == nil {
+		return nil, errors.New("failed to get function: "+gameType.(string))
+	}
+	impl := f()
+	g := NewJankenGame(impl)
+	json.Unmarshal(b, g)
+	return g, nil
+}
+
+type JankenGame struct {
+	// ID
+	Id              string              `json:"id"`
+	// 作成日時
+	CreatedAt       int64               `json:"created_at"`
+	// 作成日時
+	PostId          string              `json:"post_id"`
+	// 作成者
+	Creator         string              `json:"creator"`
+	// 最大対戦回数
+	MaxRounds       int                 `json:"max_rounds"`
+	// 最大参加人数
+	MaxParticipants int                 `json:"max_participants"`
+	// 参加者
+	Participants    []*Participant      `json:"participants"`
+	Language        string              `json:"language"`
+	GameType        string              `json:"game_type"`
+	Impl            JankenGameInterface `json:"impl"`
+}
+
+func NewJankenGame(impl JankenGameInterface) *JankenGame {
+	g := &JankenGame{
 		Id: model.NewId(),
 		CreatedAt: model.GetMillis(),
 		Creator: "",
-		MaxRounds: 5,
+		MaxRounds: DEFAULT_MAX_ROUNDS,
 		Participants: make([]*Participant, 0),
 		Language: language.English.String(),
 	}
+	g.Impl = impl
+	g.SetGameType(impl)
+	return g
 }
 
-func (g *JankenGame) ToBytes() []byte {
+func (g *JankenGame) SetGameType(impl JankenGameInterface) {
+	// ["*janken", "JankenGameImpl1"]
+	split_type := strings.Split(reflect.TypeOf(impl).String(), ".")
+	// "JankenGameImpl1"
+	g.GameType = split_type[len(split_type) - 1]
+}
+
+func (g *JankenGame) GetResult() []*Participant {
+	return g.Impl.GetResult(g)
+}
+
+func (g *JankenGame) ToBytes() ([]byte, error) {
 	b, err := json.Marshal(g)
 	if err != nil {
-		b, _ = json.Marshal(NewJankenGame())
+		return nil, err
 	}
-	return b
-}
-
-func JankenGameFromBytes(b []byte) *JankenGame {
-	j := NewJankenGame()
-	json.Unmarshal(b, j)
-	return j
+	return b, nil
 }
 
 func (g *JankenGame) GetShortId() string {
@@ -165,15 +209,6 @@ func (g *JankenGame) UpdateHands(userId string, hands []string) {
 	g.Participants = append(g.Participants, participant)
 }
 
-// GetResultは最大maxRoundsのジャンケンの結果を返す．
-// 結果は[]interface{}（各要素はinterface{}{int, Participant}]．最初の要素は順位、次の要素はParticipant）
-func (g *JankenGame) GetResult() []*Participant {
-	start_round := 0  // Handsの利用開始番号
-	start_rank := 1  // 順位の開始番号
-	result := g.nextRound(g.Participants, start_round, start_rank, nil)
-	return result
-}
-
 /*
 ジャンケン1回の勝敗を判定する．
 Args:
@@ -184,7 +219,7 @@ Returns:
     []Participant: 敗者
     []Participant: あいこ
 */
-func (g *JankenGame) janken(participants []*Participant, round int) ([]*Participant, []*Participant, []*Participant) {
+func janken(participants []*Participant, round int) ([]*Participant, []*Participant, []*Participant) {
 	// 手の種類とParticipantのmapを作る
 	set := make(map[string][]*Participant)
 	for _, p := range participants {
@@ -227,58 +262,4 @@ func (g *JankenGame) janken(participants []*Participant, round int) ([]*Particip
 	winners = set[win]
 	losers = set[lose]
 	return winners, losers, nil
-}
-
-/*
-n回戦のジャンケン結果を返すための再帰関数
-1位から順に*Participantをresultに格納していく
-Args:
-    participants: 今評価中のジャンケンの参加者
-    raound: 現在のラウンド
-    rank: 今つけようとしている順位
-    result: 結果
-Returns:
-    []*Participant: result
-*/
-func (g *JankenGame) nextRound(participants []*Participant, round, rank int, result []*Participant) []*Participant {
-	if result == nil {
-		result = make([]*Participant, 0, len(participants))
-	}
-
-	/*
-	終了条件1: 勝者or敗者1人になった場合
-	participantsに残っている1人をresultに格納する
-	*/
-	if len(participants) == 1 {
-		participants[0].Rank = rank
-		participants[0].ClearHandsAfter(round)
-		result = append(result, participants[0])
-		return result
-	}
-
-	/*
-	終了条件2: 最大対戦回数に達した場合
-	今残っているparticipantsをすべて同じ順位でresultに格納する
-	*/
-	if round >= g.MaxRounds {
-		for _, p := range participants {
-			p.Rank = rank
-			result = append(result, p)
-		}
-		return result
-	}
-
-	// ジャンケンを1回実行
-	winner, loser, drawer := g.janken(participants, round)
-
-	if drawer != nil {
-		// あいこの処理
-		result = g.nextRound(drawer, round+1, rank, result)
-	} else {
-		// 勝者の処理
-		result = g.nextRound(winner, round+1, rank, result)
-		// 敗者の処理
-		result = g.nextRound(loser, round+1, rank+len(winner), result)
-	}
-	return result
 }

@@ -52,6 +52,10 @@ Result
 		ID: "JankenGameDestroyedMessage",
 		Other: "This janken game was destroyed by @{{.Username}}.",
 	}
+	failedToGetStoredGameErrorMessage = &i18n.Message{
+		ID: "FailedToGetStoredGameErrorMessage",
+		Other: "Failed to get stored game data. Try to create another game.",
+	}
 )
 
 func (p *Plugin) InitAPI() *mux.Router {
@@ -81,13 +85,20 @@ func (p *Plugin) handleJoin(w http.ResponseWriter, r *http.Request) {
 	userId := req.UserId
 
 	gameId := req.Context["id"].(string)
-	game := p.store.jankenStore.Get(gameId)
+	game, err := p.store.jankenStore.Get(gameId)
+	if err != nil {
+		p.API.LogError(err.Error())
+		l := p.GetLocalizer(defaultLanguage.String())
+		message := Localize(l, failedToGetStoredGameErrorMessage, nil)
+		p.sendEphemeralPost(req.ChannelId, userId, message)
+		return
+	}
 
 	d := NewJoinDialog(p.API, *p.ServerConfig.ServiceSettings.SiteURL, PluginId, p)
 	d.Open(req.TriggerId, postId, userId, game)
 
 	response := &model.PostActionIntegrationResponse{}
-	p.writePostActionIntegrationResponse(response, w, r)
+	writePostActionIntegrationResponse(response, w, r)
 }
 
 func (p *Plugin) handleJoinSubmit(w http.ResponseWriter, r *http.Request) {
@@ -105,7 +116,14 @@ func (p *Plugin) handleJoinSubmit(w http.ResponseWriter, r *http.Request) {
 
 	// get stored data
 	gameId := req.State
-	game := p.store.jankenStore.Get(gameId)
+	game, err := p.store.jankenStore.Get(gameId)
+	if err != nil {
+		p.API.LogError(err.Error())
+		l := p.GetLocalizer(defaultLanguage.String())
+		message := Localize(l, failedToGetStoredGameErrorMessage, nil)
+		p.sendEphemeralPost(req.ChannelId, userId, message)
+		return
+	}
 
 	// submitされたデータの取得
 	var cancel bool
@@ -157,12 +175,12 @@ func (p *Plugin) handleJoinSubmit(w http.ResponseWriter, r *http.Request) {
 		id := game.GetShortId()
 
 		l := p.GetLocalizer(game.Language)
-		message := p.Localize(l, handsRegisteredMessage, map[string]interface{}{
+		message := Localize(l, handsRegisteredMessage, map[string]interface{}{
 			"HandsStr": hands_str,
 			"ID": id,
 		})
 
-		p.SendEphemeralPost(post.ChannelId, userId, message)
+		p.sendEphemeralPost(post.ChannelId, userId, message)
 	}
 }
 
@@ -175,7 +193,14 @@ func (p *Plugin) handleResult(w http.ResponseWriter, r *http.Request) {
 
 	// データ取得
 	gameId := req.Context["id"].(string)
-	game := p.store.jankenStore.Get(gameId)
+	game, err := p.store.jankenStore.Get(gameId)
+	if err != nil {
+		p.API.LogError(err.Error())
+		l := p.GetLocalizer(defaultLanguage.String())
+		message := Localize(l, failedToGetStoredGameErrorMessage, nil)
+		p.sendEphemeralPost(req.ChannelId, userId, message)
+		return
+	}
 
 	// localizer
 	l := p.GetLocalizer(game.Language)
@@ -183,15 +208,15 @@ func (p *Plugin) handleResult(w http.ResponseWriter, r *http.Request) {
 	// 権限チェック
 	permission, _ := p.HasPermission(game, userId)
 	if !permission {
-		message := p.Localize(l, resultPermissionErrorMessage, nil)
-		p.SendEphemeralPost(post.ChannelId, userId, message)
+		message := Localize(l, resultPermissionErrorMessage, nil)
+		p.sendEphemeralPost(post.ChannelId, userId, message)
 		return
 	}
 
 	// 最低人数2人を満たしているかチェック
 	if len(game.Participants) < 2 {
-		message := p.Localize(l, resultNotEnoughParticipantsErrorMessage, nil)
-		p.SendEphemeralPost(post.ChannelId, req.UserId, message)
+		message := Localize(l, resultNotEnoughParticipantsErrorMessage, nil)
+		p.sendEphemeralPost(post.ChannelId, req.UserId, message)
 		return
 	}
 
@@ -205,15 +230,15 @@ func (p *Plugin) handleResult(w http.ResponseWriter, r *http.Request) {
 	result := game.GetResult()
 	p.API.LogDebug("Result", "game", fmt.Sprintf("%#v", game), "result", fmt.Sprintf("%#v", result))
 
-	rankLabel := p.Localize(l, resultTableRankLabel, nil)
-	userNameLabel := p.Localize(l, resultTableUsernameLabel, nil)
-	handsLabel := p.Localize(l, resultTableHandsLabel, nil)
+	rankLabel := Localize(l, resultTableRankLabel, nil)
+	userNameLabel := Localize(l, resultTableUsernameLabel, nil)
+	handsLabel := Localize(l, resultTableHandsLabel, nil)
 
-	result_str := p.Localize(l, resultTableTitle, map[string]interface{}{
+	result_str := Localize(l, resultTableTitle, map[string]interface{}{
 		"ID": game.GetShortId(),
 	})
 	result_str = fmt.Sprintf("%s\n%s", result_str, fmt.Sprintf("|%s|%s|%s|", rankLabel, userNameLabel, handsLabel))
-	result_str = fmt.Sprintf("%s\n%s", result_str, "|:---|:---|:---|")
+	result_str = fmt.Sprintf("%s\n%s", result_str, "|:---:|:---|:---|")
 	for _, participant := range result {
 		username := participant.UserId
 		u, err := p.API.GetUser(participant.UserId)
@@ -232,11 +257,11 @@ func (p *Plugin) handleResult(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 結果を追加
-	p.AppendMessage(post, result_str)
+	appendMessage(post, result_str)
 
 	response := &model.PostActionIntegrationResponse{}
 	response.Update = post
-	p.writePostActionIntegrationResponse(response, w, r)
+	writePostActionIntegrationResponse(response, w, r)
 }
 
 func (p *Plugin) handleConfig(w http.ResponseWriter, r *http.Request) {
@@ -247,14 +272,21 @@ func (p *Plugin) handleConfig(w http.ResponseWriter, r *http.Request) {
 	post, _ := p.API.GetPost(postId)
 
 	gameId := req.Context["id"].(string)
-	game := p.store.jankenStore.Get(gameId)
+	game, err := p.store.jankenStore.Get(gameId)
+	if err != nil {
+		p.API.LogError(err.Error())
+		l := p.GetLocalizer(defaultLanguage.String())
+		message := Localize(l, failedToGetStoredGameErrorMessage, nil)
+		p.sendEphemeralPost(req.ChannelId, userId, message)
+		return
+	}
 
 	// 権限チェック
 	permission, _ := p.HasPermission(game, userId)
 	if !permission {
 		l := p.GetLocalizer(game.Language)
-		message := p.Localize(l, configPermissionErrorMessage, nil)
-		p.SendEphemeralPost(post.ChannelId, userId, message)
+		message := Localize(l, configPermissionErrorMessage, nil)
+		p.sendEphemeralPost(post.ChannelId, userId, message)
 		return
 	}
 
@@ -262,7 +294,7 @@ func (p *Plugin) handleConfig(w http.ResponseWriter, r *http.Request) {
 	d.Open(req.TriggerId, postId, game)
 
 	response := &model.PostActionIntegrationResponse{}
-	p.writePostActionIntegrationResponse(response, w, r)
+	writePostActionIntegrationResponse(response, w, r)
 }
 
 func (p *Plugin) handleConfigSubmit(w http.ResponseWriter, r *http.Request) {
@@ -274,11 +306,19 @@ func (p *Plugin) handleConfigSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userId := req.UserId
 	postId := req.CallbackId
 	post, _ := p.API.GetPost(postId)
 
 	gameId := req.State
-	game := p.store.jankenStore.Get(gameId)
+	game, err := p.store.jankenStore.Get(gameId)
+	if err != nil {
+		p.API.LogError(err.Error())
+		l := p.GetLocalizer(defaultLanguage.String())
+		message := Localize(l, failedToGetStoredGameErrorMessage, nil)
+		p.sendEphemeralPost(req.ChannelId, userId, message)
+		return
+	}
 
 	destroy, _ := strconv.ParseBool(req.Submission["destroy"].(string))
 	maxRounds, _ := strconv.Atoi(req.Submission["max_rounds"].(string))
@@ -292,10 +332,10 @@ func (p *Plugin) handleConfigSubmit(w http.ResponseWriter, r *http.Request) {
 		// メッセージを追加
 		l := p.GetLocalizer(game.Language)
 		user, _ := p.API.GetUser(req.UserId)
-		message := p.Localize(l, jankenGameDestroyedMessage, map[string]interface{}{
+		message := Localize(l, jankenGameDestroyedMessage, map[string]interface{}{
 			"Username": user.Username,
 		})
-		p.AppendMessage(post, message)
+		appendMessage(post, message)
 
 		// 更新
 		p.API.UpdatePost(post)
