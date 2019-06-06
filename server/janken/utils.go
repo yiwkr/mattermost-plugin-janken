@@ -25,5 +25,5 @@ func appendMessage(post *model.Post, format string, args ...interface{}) *model.
 func writePostActionIntegrationResponse(response *model.PostActionIntegrationResponse, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(response.ToJson())
+	w.Write(response.ToJson())
 }

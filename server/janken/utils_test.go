@@ -1,6 +1,7 @@
 package janken
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/mattermost/mattermost-server/model"
@@ -8,6 +9,36 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+type TestResponseWriter struct {
+	http.ResponseWriter
+	header        http.Header
+	writtenHeader []int
+	writtenBytes  [][]byte
+}
+
+func NewTestResponseWriter() *TestResponseWriter {
+	writtenHeader := make([]int, 0)
+	writtenBytes := make([][]byte, 0)
+	return &TestResponseWriter{
+		header:        http.Header{},
+		writtenHeader: writtenHeader,
+		writtenBytes:  writtenBytes,
+	}
+}
+
+func (w TestResponseWriter) Header() http.Header {
+	return w.header
+}
+
+func (w TestResponseWriter) WriteHeader(statusCode int) {
+	w.writtenHeader = append(w.writtenHeader, statusCode)
+}
+
+func (w TestResponseWriter) Write(b []byte) (int, error) {
+	w.writtenBytes = append(w.writtenBytes, b)
+	return len(b), nil
+}
 
 func TestPluginUtils(t *testing.T) {
 	t.Run("sendEphemeralPost", func(t *testing.T) {
@@ -70,6 +101,31 @@ func TestAppendMessage(t *testing.T) {
 			p := appendMessage(test.Post, test.AppendedMessage, test.Args...)
 
 			assert.Equal(test.ExpectedMessage, p.Message)
+		})
+	}
+}
+
+func TestWritePostActionIntegrationResponse(t *testing.T) {
+	for name, test := range map[string]struct {
+		ExpectedHeader     http.Header
+		ExpectedStatusCode []int
+	}{
+		"successfully": {
+			ExpectedHeader: http.Header{
+				"Content-Type": []string{"application/json"},
+			},
+			ExpectedStatusCode: []int{http.StatusOK},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			response := &model.PostActionIntegrationResponse{}
+			w := NewTestResponseWriter()
+			r := &http.Request{}
+			writePostActionIntegrationResponse(response, w, r)
+
+			assert.Equal(test.ExpectedHeader, w.header)
 		})
 	}
 }

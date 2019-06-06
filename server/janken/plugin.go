@@ -33,7 +33,7 @@ func (p *Plugin) OnActivate() error {
 	p.router = p.InitAPI()
 	p.store = NewStore(p.API)
 
-	if bundle, err := p.initBundle(); err != nil {
+	if bundle, err := p.InitBundle(); err != nil {
 		return err
 	} else {
 		p.bundle = bundle
@@ -61,11 +61,9 @@ func getCommand(trigger string) *model.Command {
 }
 
 /*
-HasPermission checks if a given user has the permission to end or delete a given poll
-ほぼ下記のコピペ
-https://github.com/matterpoll/matterpoll/blob/v1.1.0/server/plugin/plugin.go#L109
+HasPermission checks if a given user has the permission
 */
-func (p *Plugin) HasPermission(game *JankenGame, userId string) (bool, *model.AppError) {
+func (p *Plugin) HasPermission(game *JankenGame, userId string) (bool, error) {
 	if userId == game.Creator {
 		return true, nil
 	}

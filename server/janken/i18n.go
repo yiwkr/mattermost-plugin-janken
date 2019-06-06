@@ -13,7 +13,7 @@ import (
 
 var defaultLanguage language.Tag = language.English
 
-func (p *Plugin) initBundle() (*i18n.Bundle, error) {
+func (p *Plugin) InitBundle() (*i18n.Bundle, error) {
 	bundle := i18n.NewBundle(defaultLanguage)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 

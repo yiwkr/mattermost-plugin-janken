@@ -2,13 +2,19 @@ package janken
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 
+	"github.com/bouk/monkey"
 	"github.com/stretchr/testify/assert"
 )
 
 type TestJankenGameImpl struct {
 	JankenGameBase
+}
+
+func NewTestJankenGameImpl() JankenGameInterface {
+	return &TestJankenGameImpl{}
 }
 
 func (g *TestJankenGameImpl) GetResult(game *JankenGame) []*Participant {
@@ -93,6 +99,51 @@ func TestJankenGame(t *testing.T) {
 		})
 	})
 
+	t.Run("JankenGameFromBytes", func(t *testing.T) {
+		for name, test := range map[string]struct {
+			Bytes              []byte
+			ExpectedJankenGame *JankenGame
+			ShouldError        bool
+		}{
+			"successfully": {
+				Bytes:              []byte(`{"game_type":"TestJankenGameImpl"}`),
+				ExpectedJankenGame: &JankenGame{Impl: NewTestJankenGameImpl()},
+				ShouldError:        false,
+			},
+			"game_type missing": {
+				Bytes:              []byte("{}"),
+				ExpectedJankenGame: nil,
+				ShouldError:        true,
+			},
+			"Invalid game_type": {
+				Bytes:              []byte(`{"game_type":"InvalidGameType"}`),
+				ExpectedJankenGame: nil,
+				ShouldError:        true,
+			},
+		} {
+			t.Run(name, func(t *testing.T) {
+				NewJankenGameFuncMapping = map[string](func() JankenGameInterface){
+					"TestJankenGameImpl": NewTestJankenGameImpl,
+				}
+
+				g, err := JankenGameFromBytes(test.Bytes)
+
+				assert := assert.New(t)
+				if test.ExpectedJankenGame != nil && g != nil {
+					assert.Equal(test.ExpectedJankenGame.Impl, g.Impl)
+				} else {
+					assert.Equal(test.ExpectedJankenGame, g)
+				}
+
+				if test.ShouldError {
+					assert.NotNil(err)
+				} else {
+					assert.Nil(err)
+				}
+			})
+		}
+	})
+
 	t.Run("GetResult", func(t *testing.T) {
 		for name, test := range map[string]struct {
 			ExpectedParticipants []*Participant
@@ -116,15 +167,48 @@ func TestJankenGame(t *testing.T) {
 	})
 
 	t.Run("ToBytes", func(t *testing.T) {
-		t.Run("convert to bytes successfully", func(t *testing.T) {
-			assert := assert.New(t)
+		for name, test := range map[string]struct {
+			PatchMarshal  func() *monkey.PatchGuard
+			ExpectedBytes []byte
+			ShouldError   bool
+		}{
+			"convert to bytes successfully": {
+				PatchMarshal: func() *monkey.PatchGuard {
+					return monkey.Patch(json.Marshal, func(interface{}) ([]byte, error) {
+						return []byte(`{}`), nil
+					})
+				},
+				ExpectedBytes: []byte(`{}`),
+				ShouldError:   false,
+			},
+			"failed because json.Marshal returns error": {
+				PatchMarshal: func() *monkey.PatchGuard {
+					return monkey.Patch(json.Marshal, func(interface{}) ([]byte, error) {
+						return nil, errors.New("Marshal error")
+					})
+				},
+				ExpectedBytes: nil,
+				ShouldError:   true,
+			},
+		} {
+			t.Run(name, func(t *testing.T) {
+				patch := test.PatchMarshal()
+				defer patch.Unpatch()
 
-			g := JankenGame{}
+				g := JankenGame{}
 
-			b, _ := g.ToBytes()
-			expect, _ := json.Marshal(g)
-			assert.Equal(expect, b)
-		})
+				b, err := g.ToBytes()
+
+				assert := assert.New(t)
+				assert.Equal(test.ExpectedBytes, b)
+
+				if test.ShouldError {
+					assert.NotNil(err)
+				} else {
+					assert.Nil(err)
+				}
+			})
+		}
 	})
 
 	t.Run("GetShortId", func(t *testing.T) {
