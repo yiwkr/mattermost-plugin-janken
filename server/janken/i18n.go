@@ -13,15 +13,26 @@ import (
 
 var defaultLanguage language.Tag = language.English
 
-func (p *Plugin) InitBundle() (*i18n.Bundle, error) {
-	bundle := i18n.NewBundle(defaultLanguage)
-	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
-
+func getAssetsDir() (string, error) {
 	exPath, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
 	serverDistDir := filepath.Dir(exPath)
 	serverDir := filepath.Dir(serverDistDir)
 	pluginDir := filepath.Dir(serverDir)
 	assetsDir := filepath.Join(pluginDir, "assets")
+	return assetsDir, nil
+}
+
+func (p *Plugin) InitBundle() (*i18n.Bundle, error) {
+	bundle := i18n.NewBundle(defaultLanguage)
+	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+
+	assetsDir, err := getAssetsDir()
+	if err != nil {
+		return nil, err
+	}
 
 	files, err := ioutil.ReadDir(assetsDir)
 	if err != nil {
