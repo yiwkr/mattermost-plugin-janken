@@ -14,7 +14,7 @@ import (
 )
 
 func TestPlugin(t *testing.T) {
-	t.Run("OnActivate", func(t *testing.T){
+	t.Run("OnActivate", func(t *testing.T) {
 		for name, test := range map[string]struct {
 			SetupPatch  func() *monkey.PatchGuard
 			ShouldError bool
@@ -37,8 +37,8 @@ func TestPlugin(t *testing.T) {
 				},
 				ShouldError: true,
 			},
-		}{
-			t.Run(name, func(t *testing.T){
+		} {
+			t.Run(name, func(t *testing.T) {
 				assert := assert.New(t)
 
 				patch := test.SetupPatch()
@@ -56,7 +56,7 @@ func TestPlugin(t *testing.T) {
 		}
 	})
 
-	t.Run("OnDeactivate", func(t *testing.T){
+	t.Run("OnDeactivate", func(t *testing.T) {
 		for name, test := range map[string]struct {
 			SetupAPI    func() *plugintest.API
 			ShouldError bool
@@ -77,8 +77,8 @@ func TestPlugin(t *testing.T) {
 				},
 				ShouldError: true,
 			},
-		}{
-			t.Run(name, func(t *testing.T){
+		} {
+			t.Run(name, func(t *testing.T) {
 				assert := assert.New(t)
 
 				p := &Plugin{}
@@ -96,7 +96,7 @@ func TestPlugin(t *testing.T) {
 		}
 	})
 
-	t.Run("getCommand", func(t *testing.T){
+	t.Run("getCommand", func(t *testing.T) {
 		for name, test := range map[string]struct {
 			Trigger         string
 			ExpectedCommand *model.Command
@@ -111,8 +111,8 @@ func TestPlugin(t *testing.T) {
 					AutoCompleteDesc: "Create a janken",
 				},
 			},
-		}{
-			t.Run(name, func(t *testing.T){
+		} {
+			t.Run(name, func(t *testing.T) {
 				assert := assert.New(t)
 
 				c := getCommand(test.Trigger)
@@ -122,7 +122,7 @@ func TestPlugin(t *testing.T) {
 		}
 	})
 
-	t.Run("HasPermission", func(t *testing.T){
+	t.Run("HasPermission", func(t *testing.T) {
 		for name, test := range map[string]struct {
 			SetupAPI       func() *plugintest.API
 			Game           *JankenGame
@@ -186,8 +186,8 @@ func TestPlugin(t *testing.T) {
 				ExpectedResult: false,
 				ShouldError:    false,
 			},
-		}{
-			t.Run(name, func(t *testing.T){
+		} {
+			t.Run(name, func(t *testing.T) {
 				assert := assert.New(t)
 
 				var u *model.User

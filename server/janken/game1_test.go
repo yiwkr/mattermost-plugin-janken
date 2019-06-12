@@ -7,6 +7,12 @@ import (
 )
 
 func TestJankenGameImpl1(t *testing.T) {
+	t.Run("NewJankenGameImpl1", func(t *testing.T) {
+		expectedGame := &JankenGameImpl1{}
+		g := NewJankenGameImpl1()
+		assert.Equal(t, expectedGame, g)
+	})
+
 	t.Run("GetResult", func(t *testing.T) {
 		for name, test := range map[string]struct {
 			MaxRounds     int

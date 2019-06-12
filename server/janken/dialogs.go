@@ -188,7 +188,7 @@ func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 		Dialog:    dialog,
 	}
 
-	_ = d.API.OpenInteractiveDialog(request)
+	d.API.OpenInteractiveDialog(request)
 }
 
 // ConfigDialogは"設定"ボタンが押されたときに開くダイアログ
@@ -255,5 +255,5 @@ func (d *ConfigDialog) Open(triggerId, postId string, game *JankenGame) {
 		Dialog:    dialog,
 	}
 
-	_ = d.API.OpenInteractiveDialog(request)
+	d.API.OpenInteractiveDialog(request)
 }
