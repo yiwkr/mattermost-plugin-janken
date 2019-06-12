@@ -1,7 +1,9 @@
 package janken
 
 import (
+	"math/rand"
 	"sync"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/mattermost/mattermost-server/model"
@@ -38,6 +40,8 @@ func (p *Plugin) OnActivate() error {
 	} else {
 		p.bundle = bundle
 	}
+
+	rand.Seed(time.Now().UnixNano())
 
 	return nil
 }

@@ -4,6 +4,7 @@ package janken
 import (
 	"encoding/json"
 	"errors"
+	"math/rand"
 	"reflect"
 	"sort"
 	"strings"
@@ -16,6 +17,8 @@ const (
 	MAX_HANDS          = 10
 	DEFAULT_MAX_ROUNDS = 5
 )
+
+var HANDS = []string{"rock", "scissors", "paper"}
 
 // 英語名の手と日本語名の手の対応
 var Hands = map[string]string{
@@ -69,19 +72,10 @@ GetHandはiで指定した手を返す．
 */
 func (p *Participant) GetHand(i int) string {
 	hand := p.Hands[i]
-
 	if hand == "" {
-		/*
-			Goのmapは実行ごとに異なる順番で要素を取り出すため
-			Handsの最初の1つを取り出せばランダムに手を取得できる
-		*/
-		for h := range Hands {
-			hand = h
-			break
-		}
+		hand = HANDS[rand.Intn(len(HANDS))]
 		p.Hands[i] = hand
 	}
-
 	return hand
 }
 
