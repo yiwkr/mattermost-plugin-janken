@@ -8,10 +8,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
-	"golang.org/x/text/language"
 )
-
-var defaultLanguage language.Tag = language.English
 
 func getAssetsDir() (string, error) {
 	exPath, err := os.Executable()
@@ -26,7 +23,7 @@ func getAssetsDir() (string, error) {
 }
 
 func (p *Plugin) InitBundle() (*i18n.Bundle, error) {
-	bundle := i18n.NewBundle(defaultLanguage)
+	bundle := i18n.NewBundle(p.configuration.GetDefaultLanguageTag())
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 
 	assetsDir, err := getAssetsDir()

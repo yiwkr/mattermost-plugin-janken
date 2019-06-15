@@ -35,12 +35,6 @@ func (p *Plugin) OnActivate() error {
 	p.router = p.InitAPI()
 	p.store = NewStore(p.API)
 
-	if bundle, err := p.InitBundle(); err != nil {
-		return err
-	} else {
-		p.bundle = bundle
-	}
-
 	rand.Seed(time.Now().UnixNano())
 
 	return nil

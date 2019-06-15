@@ -28,15 +28,6 @@ func TestPlugin(t *testing.T) {
 				},
 				ShouldError: false,
 			},
-			"failed because Plugin.InitBundle returns an error": {
-				SetupPatch: func() *monkey.PatchGuard {
-					var p *Plugin
-					return monkey.PatchInstanceMethod(reflect.TypeOf(p), "InitBundle", func(*Plugin) (*i18n.Bundle, error) {
-						return nil, errors.New("error")
-					})
-				},
-				ShouldError: true,
-			},
 		} {
 			t.Run(name, func(t *testing.T) {
 				assert := assert.New(t)

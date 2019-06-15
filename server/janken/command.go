@@ -43,12 +43,6 @@ type ParsedArgs struct {
 	Language string
 }
 
-func NewParsedArgs() *ParsedArgs {
-	return &ParsedArgs{
-		Language: defaultLanguage.String(),
-	}
-}
-
 func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	p.API.LogDebug("ExecuteCommand", "Context", fmt.Sprintf("%#v", c), "args", fmt.Sprintf("%#v", args))
 
@@ -72,7 +66,7 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 	}
 
 	if !p.isValidLanguage(game.Language) {
-		defaultLanguageStr := defaultLanguage.String()
+		defaultLanguageStr := p.configuration.DefaultLanguage
 		message := fmt.Sprintf(`Language "%s" is not available. "%s" is used instead.`, game.Language, defaultLanguageStr)
 		p.sendEphemeralPost(args.ChannelId, args.UserId, message)
 		game.Language = defaultLanguageStr
@@ -100,7 +94,7 @@ func (p *Plugin) parseArgs(command string) (*ParsedArgs, error) {
 	}
 	args = args[1:]
 
-	parsedArgs := NewParsedArgs()
+	parsedArgs := &ParsedArgs{Language: p.configuration.DefaultLanguage}
 	positionalArgs := make([]string, 0)
 	unknownOptions := make([]string, 0)
 
@@ -217,7 +211,7 @@ func (p *Plugin) getCommandUsage() string {
 	Usage: /%s [-l en|ja]
 
 	Optional arguments
-	  -l en|ja   Language (default: en)
+	  -l en|ja   Language
 	`
 	return fmt.Sprintf(template, p.configuration.Trigger)
 }

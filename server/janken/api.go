@@ -88,7 +88,7 @@ func (p *Plugin) handleJoin(w http.ResponseWriter, r *http.Request) {
 	game, err := p.store.jankenStore.Get(gameId)
 	if err != nil {
 		p.API.LogError(err.Error())
-		l := p.GetLocalizer(defaultLanguage.String())
+		l := p.GetLocalizer(p.configuration.DefaultLanguage)
 		message := Localize(l, failedToGetStoredGameErrorMessage, nil)
 		p.sendEphemeralPost(req.ChannelId, userId, message)
 		return
@@ -119,7 +119,7 @@ func (p *Plugin) handleJoinSubmit(w http.ResponseWriter, r *http.Request) {
 	game, err := p.store.jankenStore.Get(gameId)
 	if err != nil {
 		p.API.LogError(err.Error())
-		l := p.GetLocalizer(defaultLanguage.String())
+		l := p.GetLocalizer(p.configuration.DefaultLanguage)
 		message := Localize(l, failedToGetStoredGameErrorMessage, nil)
 		p.sendEphemeralPost(req.ChannelId, userId, message)
 		return
@@ -196,7 +196,7 @@ func (p *Plugin) handleResult(w http.ResponseWriter, r *http.Request) {
 	game, err := p.store.jankenStore.Get(gameId)
 	if err != nil {
 		p.API.LogError(err.Error())
-		l := p.GetLocalizer(defaultLanguage.String())
+		l := p.GetLocalizer(p.configuration.DefaultLanguage)
 		message := Localize(l, failedToGetStoredGameErrorMessage, nil)
 		p.sendEphemeralPost(req.ChannelId, userId, message)
 		return
@@ -275,7 +275,7 @@ func (p *Plugin) handleConfig(w http.ResponseWriter, r *http.Request) {
 	game, err := p.store.jankenStore.Get(gameId)
 	if err != nil {
 		p.API.LogError(err.Error())
-		l := p.GetLocalizer(defaultLanguage.String())
+		l := p.GetLocalizer(p.configuration.DefaultLanguage)
 		message := Localize(l, failedToGetStoredGameErrorMessage, nil)
 		p.sendEphemeralPost(req.ChannelId, userId, message)
 		return
@@ -314,7 +314,7 @@ func (p *Plugin) handleConfigSubmit(w http.ResponseWriter, r *http.Request) {
 	game, err := p.store.jankenStore.Get(gameId)
 	if err != nil {
 		p.API.LogError(err.Error())
-		l := p.GetLocalizer(defaultLanguage.String())
+		l := p.GetLocalizer(p.configuration.DefaultLanguage)
 		message := Localize(l, failedToGetStoredGameErrorMessage, nil)
 		p.sendEphemeralPost(req.ChannelId, userId, message)
 		return

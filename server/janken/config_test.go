@@ -2,9 +2,12 @@ package janken
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 
+	"github.com/bouk/monkey"
 	"github.com/mattermost/mattermost-server/plugin/plugintest"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -13,6 +16,7 @@ func TestPluginConfig(t *testing.T) {
 	t.Run("OnConfigurationChange", func(t *testing.T) {
 		for name, test := range map[string]struct {
 			SetupAPI         func() *plugintest.API
+			SetupPatch       func() *monkey.PatchGuard
 			PreConfiguration *configuration
 			ShouldError      bool
 		}{
@@ -24,6 +28,12 @@ func TestPluginConfig(t *testing.T) {
 					api.On("RegisterCommand", mock.Anything).Return(nil)
 					api.On("GetConfig").Return(nil)
 					return api
+				},
+				SetupPatch: func() *monkey.PatchGuard {
+					var p *Plugin
+					return monkey.PatchInstanceMethod(reflect.TypeOf(p), "InitBundle", func(*Plugin) (*i18n.Bundle, error) {
+						return &i18n.Bundle{}, nil
+					})
 				},
 				PreConfiguration: &configuration{Trigger: "janken"},
 				ShouldError:      false,
@@ -61,6 +71,11 @@ func TestPluginConfig(t *testing.T) {
 		} {
 			t.Run(name, func(t *testing.T) {
 				assert := assert.New(t)
+
+				if test.SetupPatch != nil {
+					patch := test.SetupPatch()
+					defer patch.Unpatch()
+				}
 
 				p := &Plugin{}
 				api := test.SetupAPI()

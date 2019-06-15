@@ -13,12 +13,25 @@
         "executable": ""
     },
     "settings_schema": {
-        "settings": [{
-            "key": "trigger",
-            "display_name": "Trigger",
-            "type": "text",
-            "help_text": "Command trigger (default to \"janken\")",
-            "default": "janken"
-        }]
+        "settings": [
+            {
+                "key": "trigger",
+                "display_name": "Trigger",
+                "type": "text",
+                "help_text": "Command trigger (default to \"janken\")",
+                "default": "janken"
+            },
+            {
+                "key": "defaultLanguage",
+                "display_name": "DefaultLanguage",
+                "type": "dropdown",
+                "help_text": "Default Language (default to \"English\")",
+                "default": "en",
+                "options": [
+                    {"display_name": "English", "value": "en"},
+                    {"display_name": "日本語", "value": "ja"}
+                ]
+            }
+        ]
     }
 }

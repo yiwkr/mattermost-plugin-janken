@@ -2,10 +2,25 @@ package janken
 
 import (
 	"github.com/pkg/errors"
+	"golang.org/x/text/language"
 )
 
 type configuration struct {
-	Trigger string
+	Trigger         string
+	DefaultLanguage string
+}
+
+func (c *configuration) GetDefaultLanguageTag() language.Tag {
+	defaultLanguage := language.English
+	if c == nil {
+		return defaultLanguage
+	}
+
+	t, err := language.Parse(c.DefaultLanguage)
+	if err != nil {
+		return defaultLanguage
+	}
+	return t
 }
 
 // OnConfigurationChange loads the plugin configuration
@@ -28,6 +43,13 @@ func (p *Plugin) OnConfigurationChange() error {
 
 	p.setConfiguration(configuration)
 	p.ServerConfig = p.API.GetConfig()
+
+	if bundle, err := p.InitBundle(); err != nil {
+		return err
+	} else {
+		p.bundle = bundle
+	}
+
 	return nil
 }
 
