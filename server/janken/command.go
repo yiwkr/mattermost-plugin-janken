@@ -2,6 +2,7 @@ package janken
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"strings"
 
@@ -40,7 +41,7 @@ Participants ({{.ParticipantsNum}}): {{.ParticipantsStr}}`,
 )
 
 type ParsedArgs struct {
-	Language string
+	Language *string
 }
 
 func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
@@ -48,16 +49,18 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 
 	parsedArgs, err := p.parseArgs(args.Command)
 	if err != nil {
-		usage := p.getCommandUsage()
-		errmsg := fmt.Sprintf("Failed to parse arguments.: %s", err.Error())
-		message := fmt.Sprintf("%s\n\n%s", usage, errmsg)
+		message := p.getCommandUsage()
+		if err.Error() != "" {
+			errmsg := fmt.Sprintf("Failed to parse arguments.: %s", err.Error())
+			message = fmt.Sprintf("%s\n\n%s", message, errmsg)
+		}
 		response := NewCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, message, nil)
 		return response, nil
 	}
 
 	game := NewJankenGame(&JankenGameImpl1{})
 	game.Creator = args.UserId
-	game.Language = parsedArgs.Language
+	game.Language = *parsedArgs.Language
 	err = p.store.jankenStore.Save(game)
 	if err != nil {
 		errmsg := fmt.Sprintf("Failed to store game data.: %s", err.Error())
@@ -87,39 +90,22 @@ func (p *Plugin) isValidLanguage(language string) bool {
 }
 
 func (p *Plugin) parseArgs(command string) (*ParsedArgs, error) {
+	parsedArgs := &ParsedArgs{Language: &p.configuration.DefaultLanguage}
+
+	fs := flag.NewFlagSet("janken", flag.ContinueOnError)
+	parsedArgs.Language = fs.String("l", "", `Language option. Available values are "en" or "ja".`)
+	flag.ErrHelp = errors.New("")
+
 	// split command string like shell arguments
 	args, err := shellquote.Split(command)
 	if err != nil {
 		return nil, err
 	}
-	args = args[1:]
-
-	parsedArgs := &ParsedArgs{Language: p.configuration.DefaultLanguage}
-	positionalArgs := make([]string, 0)
-	unknownOptions := make([]string, 0)
-
-	for i := 0; i < len(args); i++ {
-		switch {
-		case strings.HasPrefix(args[i], "-"):
-			option := strings.TrimPrefix(args[i], "-")
-			switch {
-			case option == "l":
-				if i >= len(args)-1 {
-					return nil, errors.New(fmt.Sprintf(`"-l" option requires a value, "en" or "ja".`))
-				}
-				parsedArgs.Language = args[i+1]
-				i++
-			default:
-				unknownOptions = append(unknownOptions, args[i])
-			}
-		default:
-			positionalArgs = append(positionalArgs, args[i])
-		}
+	if err := fs.Parse(args[1:]); err != nil {
+		return nil, err
 	}
 
-	if len(unknownOptions) > 0 {
-		return nil, errors.New(fmt.Sprintf("Invalid arguments: %s", unknownOptions))
-	}
+	positionalArgs := fs.Args()
 	if len(positionalArgs) > 0 {
 		return nil, errors.New(fmt.Sprintf("Invalid arguments: %s", positionalArgs))
 	}
