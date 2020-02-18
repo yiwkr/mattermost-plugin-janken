@@ -1,11 +1,11 @@
-package janken
+package main
 
 import (
 	"net/http"
 	"testing"
 
-	"github.com/mattermost/mattermost-server/model"
-	"github.com/mattermost/mattermost-server/plugin/plugintest"
+	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v5/plugin/plugintest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -44,8 +44,8 @@ func TestPluginUtils(t *testing.T) {
 	t.Run("sendEphemeralPost", func(t *testing.T) {
 		for name, test := range map[string]struct {
 			SetupAPI     func() *plugintest.API
-			ChannelId    string
-			UserId       string
+			ChannelID    string
+			UserID       string
 			Message      string
 			ExpectedPost *model.Post
 		}{
@@ -55,8 +55,8 @@ func TestPluginUtils(t *testing.T) {
 					api.On("SendEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Return(&model.Post{})
 					return api
 				},
-				ChannelId: "test_channel_id",
-				UserId:    "test_user_id",
+				ChannelID: "test_channel_id",
+				UserID:    "test_user_id",
 				Message:   "test_message",
 			},
 		} {
@@ -65,7 +65,7 @@ func TestPluginUtils(t *testing.T) {
 				p := &Plugin{}
 				p.SetAPI(api)
 
-				p.sendEphemeralPost(test.ChannelId, test.UserId, test.Message)
+				p.sendEphemeralPost(test.ChannelID, test.UserID, test.Message)
 			})
 		}
 	})
@@ -101,31 +101,6 @@ func TestAppendMessage(t *testing.T) {
 			p := appendMessage(test.Post, test.AppendedMessage, test.Args...)
 
 			assert.Equal(test.ExpectedMessage, p.Message)
-		})
-	}
-}
-
-func TestWritePostActionIntegrationResponse(t *testing.T) {
-	for name, test := range map[string]struct {
-		ExpectedHeader     http.Header
-		ExpectedStatusCode []int
-	}{
-		"successfully": {
-			ExpectedHeader: http.Header{
-				"Content-Type": []string{"application/json"},
-			},
-			ExpectedStatusCode: []int{http.StatusOK},
-		},
-	} {
-		t.Run(name, func(t *testing.T) {
-			assert := assert.New(t)
-
-			response := &model.PostActionIntegrationResponse{}
-			w := NewTestResponseWriter()
-			r := &http.Request{}
-			writePostActionIntegrationResponse(response, w, r)
-
-			assert.Equal(test.ExpectedHeader, w.header)
 		})
 	}
 }

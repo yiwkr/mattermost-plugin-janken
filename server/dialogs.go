@@ -1,70 +1,70 @@
-package janken
+package main
 
 import (
 	"fmt"
 	"strconv"
 
-	"github.com/mattermost/mattermost-server/model"
-	"github.com/mattermost/mattermost-server/plugin"
+	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 var handMessages = map[string]*i18n.Message{
-	"rock": &i18n.Message{
-		ID:    "JoinDialogHandRock",
+	"rock": {
+		ID:    "joinDialogHandRock",
 		Other: "Rock",
 	},
-	"scissors": &i18n.Message{
-		ID:    "JoinDialogHandScissors",
+	"scissors": {
+		ID:    "joinDialogHandScissors",
 		Other: "Scissors",
 	},
-	"paper": &i18n.Message{
-		ID:    "JoinDialogHandPaper",
+	"paper": {
+		ID:    "joinDialogHandPaper",
 		Other: "Paper",
 	},
 }
 
 var (
 	joinDialogTitle = &i18n.Message{
-		ID:    "JoinDialogTitle",
+		ID:    "joinDialogTitle",
 		Other: "Join the janken game",
 	}
 	joinDialogSubmitLabel = &i18n.Message{
-		ID:    "JoinDialogSubmitLabel",
+		ID:    "joinDialogSubmitLabel",
 		Other: "Save",
 	}
 	joinDialogCancelLabel = &i18n.Message{
-		ID:    "JoinDialogCancelLabel",
+		ID:    "joinDialogCancelLabel",
 		Other: "Cancel",
 	}
 	joinDialogHandElementLabel = &i18n.Message{
-		ID:    "JoinDialogHandElementLabel",
+		ID:    "joinDialogHandElementLabel",
 		Other: "Hand {{.Index}}",
 	}
 	joinDialogHandElementHelp = &i18n.Message{
-		ID:    "JoinDialogHandElementHelp",
+		ID:    "joinDialogHandElementHelp",
 		Other: "Choose hand {{.Index}}",
 	}
 	configDialogTitle = &i18n.Message{
-		ID:    "ConfigDialogTitle",
+		ID:    "configDialogTitle",
 		Other: "Config",
 	}
 	configDialogSubmitLabel = &i18n.Message{
-		ID:    "ConfigDialogSubmitLabel",
+		ID:    "configDialogSubmitLabel",
 		Other: "Save",
 	}
 	configDialogMaxRoundsLabel = &i18n.Message{
-		ID:    "ConfigDialogMaxRoundsLabel",
+		ID:    "configDialogMaxRoundsLabel",
 		Other: "Max rounds",
 	}
 	configDialogDestroyLabel = &i18n.Message{
-		ID:    "ConfigDialogDestroyLabel",
+		ID:    "configDialogDestroyLabel",
 		Other: "Destroy this game",
 	}
 )
 
 // 参加取消の選択肢
-var CancelOptions []*model.PostActionOptions = []*model.PostActionOptions{
+var cancelOptions []*model.PostActionOptions = []*model.PostActionOptions{
 	{
 		Text:  "-",
 		Value: "false",
@@ -76,7 +76,7 @@ var CancelOptions []*model.PostActionOptions = []*model.PostActionOptions{
 }
 
 // ゲーム削除の選択肢
-var DestroyOptions []*model.PostActionOptions = []*model.PostActionOptions{
+var destroyOptions []*model.PostActionOptions = []*model.PostActionOptions{
 	{
 		Text:  "-",
 		Value: "false",
@@ -87,29 +87,29 @@ var DestroyOptions []*model.PostActionOptions = []*model.PostActionOptions{
 	},
 }
 
-type Dialog struct {
+type dialog struct {
 	API      plugin.API
 	siteURL  string
-	pluginId string
+	pluginID string
 	plugin   *Plugin
 }
 
-// JoinDialogは"参加"ボタンが押されたときに開くダイアログ
-type JoinDialog struct{ Dialog }
+// joinDialogは"参加"ボタンが押されたときに開くダイアログ
+type joinDialog struct{ dialog }
 
-func NewJoinDialog(api plugin.API, siteURL, pluginId string, plugin *Plugin) *JoinDialog {
-	d := &JoinDialog{}
+func newJoinDialog(api plugin.API, siteURL, pluginID string, plugin *Plugin) *joinDialog {
+	d := &joinDialog{}
 	d.API = api
 	d.siteURL = siteURL
-	d.pluginId = pluginId
+	d.pluginID = pluginID
 	d.plugin = plugin
 	return d
 }
 
-func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
+func (d *joinDialog) Open(triggerID, postID, userID string, game *game) {
 	d.API.LogDebug("openJoinDialog is called")
 
-	l := d.plugin.GetLocalizer(game.Language)
+	l := d.plugin.getLocalizer(game.Language)
 	dialogTitle := Localize(l, joinDialogTitle, nil)
 	submitLabel := Localize(l, joinDialogSubmitLabel, nil)
 	cancelLabel := Localize(l, joinDialogCancelLabel, nil)
@@ -130,9 +130,9 @@ func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 		},
 	}
 
-	participant := game.GetParticipant(userId)
-	if participant == nil {
-		participant = NewParticipant(userId)
+	p := game.GetParticipant(userID)
+	if p == nil {
+		p = newParticipant(userID)
 	}
 
 	// 手の入力フォームを追加
@@ -148,7 +148,7 @@ func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 			"Index": i1,
 		})
 
-		hand := participant.GetHand(i)
+		hand := p.getHand(i)
 		localizedHand := Localize(l, handMessages[hand], nil)
 
 		elements = append(elements, model.DialogElement{
@@ -170,51 +170,51 @@ func (d *JoinDialog) Open(triggerId, postId, userId string, game *JankenGame) {
 		Placeholder: "-",
 		Default:     "false",
 		Optional:    true,
-		Options:     CancelOptions,
+		Options:     cancelOptions,
 	})
 
 	dialog := model.Dialog{
-		CallbackId:     postId,
+		CallbackId:     postID,
 		Title:          dialogTitle,
 		SubmitLabel:    submitLabel,
 		NotifyOnCancel: false,
-		State:          game.Id,
+		State:          game.ID,
 		Elements:       elements,
 	}
 
 	request := model.OpenDialogRequest{
-		TriggerId: triggerId,
-		URL:       fmt.Sprintf("%s/plugins/%s/api/v1/janken/join/submit", d.siteURL, d.pluginId),
+		TriggerId: triggerID,
+		URL:       fmt.Sprintf("%s/plugins/%s/api/v1/janken/join/submit", d.siteURL, d.pluginID),
 		Dialog:    dialog,
 	}
 
 	d.API.OpenInteractiveDialog(request)
 }
 
-// ConfigDialogは"設定"ボタンが押されたときに開くダイアログ
-type ConfigDialog struct{ Dialog }
+// configDialogは"設定"ボタンが押されたときに開くダイアログ
+type configDialog struct{ dialog }
 
-func NewConfigDialog(api plugin.API, siteURL, pluginId string, plugin *Plugin) *ConfigDialog {
-	d := &ConfigDialog{}
+func newConfigDialog(api plugin.API, siteURL, pluginID string, plugin *Plugin) *configDialog {
+	d := &configDialog{}
 	d.API = api
 	d.siteURL = siteURL
-	d.pluginId = pluginId
+	d.pluginID = pluginID
 	d.plugin = plugin
 	return d
 }
 
-func (d *ConfigDialog) Open(triggerId, postId string, game *JankenGame) {
+func (d *configDialog) Open(triggerID, postID string, game *game) {
 	d.API.LogDebug("openConfigDialog is called")
 
 	// options for maxRounds
 	maxRoundsOptions := []*model.PostActionOptions{}
-	for i := 1; i <= MAX_HANDS; i++ {
+	for i := 1; i <= maxHands; i++ {
 		maxRoundsOptions = append(maxRoundsOptions, &model.PostActionOptions{
 			Text: strconv.Itoa(i), Value: strconv.Itoa(i),
 		})
 	}
 
-	l := d.plugin.GetLocalizer(game.Language)
+	l := d.plugin.getLocalizer(game.Language)
 	dialogTitle := Localize(l, configDialogTitle, nil)
 	submitLabel := Localize(l, configDialogSubmitLabel, nil)
 	maxRoundsLabel := Localize(l, configDialogMaxRoundsLabel, nil)
@@ -236,22 +236,22 @@ func (d *ConfigDialog) Open(triggerId, postId string, game *JankenGame) {
 			Placeholder: "-",
 			Default:     "false",
 			Optional:    true,
-			Options:     DestroyOptions,
+			Options:     destroyOptions,
 		},
 	}
 
 	dialog := model.Dialog{
-		CallbackId:     postId,
+		CallbackId:     postID,
 		Title:          dialogTitle,
 		SubmitLabel:    submitLabel,
 		NotifyOnCancel: false,
-		State:          game.Id,
+		State:          game.ID,
 		Elements:       elements,
 	}
 
 	request := model.OpenDialogRequest{
-		TriggerId: triggerId,
-		URL:       fmt.Sprintf("%s/plugins/%s/api/v1/janken/config/submit", d.siteURL, d.pluginId),
+		TriggerId: triggerID,
+		URL:       fmt.Sprintf("%s/plugins/%s/api/v1/janken/config/submit", d.siteURL, d.pluginID),
 		Dialog:    dialog,
 	}
 

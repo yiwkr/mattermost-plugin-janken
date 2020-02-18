@@ -1,8 +1,8 @@
-package janken
+package main
 
 import (
+	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"regexp"
 
@@ -10,23 +10,25 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
-func getAssetsDir() (string, error) {
-	exPath, err := os.Executable()
+func (p *Plugin) getAssetsDir() (string, error) {
+	pluginDir, err := p.API.GetBundlePath()
 	if err != nil {
 		return "", err
 	}
-	serverDistDir := filepath.Dir(exPath)
-	serverDir := filepath.Dir(serverDistDir)
-	pluginDir := filepath.Dir(serverDir)
+	p.API.LogDebug("pluginDir: " + pluginDir)
 	assetsDir := filepath.Join(pluginDir, "assets")
+	p.API.LogDebug("assetsDir: " + assetsDir)
 	return assetsDir, nil
 }
 
+// InitBundle initialize i18n.Bundle
 func (p *Plugin) InitBundle() (*i18n.Bundle, error) {
-	bundle := i18n.NewBundle(p.configuration.GetDefaultLanguageTag())
+	t := p.configuration.GetDefaultLanguageTag()
+	p.API.LogDebug("DefaultLanguage: " + t.String())
+	bundle := i18n.NewBundle(t)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 
-	assetsDir, err := getAssetsDir()
+	assetsDir, err := p.getAssetsDir()
 	if err != nil {
 		return nil, err
 	}
@@ -45,14 +47,16 @@ func (p *Plugin) InitBundle() (*i18n.Bundle, error) {
 		if _, err = bundle.LoadMessageFile(filepath.Join(assetsDir, file.Name())); err != nil {
 			return nil, err
 		}
+		p.API.LogDebug(fmt.Sprintf("loaded language file: %s", file.Name()))
 	}
 	return bundle, nil
 }
 
-func (p *Plugin) GetLocalizer(tag string) *i18n.Localizer {
+func (p *Plugin) getLocalizer(tag string) *i18n.Localizer {
 	return i18n.NewLocalizer(p.bundle, tag)
 }
 
+// Localize localize message
 func Localize(l *i18n.Localizer, defaultMessage *i18n.Message, templateData map[string]interface{}) string {
 	m := l.MustLocalize(&i18n.LocalizeConfig{
 		DefaultMessage: defaultMessage,

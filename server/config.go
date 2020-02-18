@@ -1,16 +1,16 @@
-package janken
+package main
 
 import (
 	"github.com/pkg/errors"
 	"golang.org/x/text/language"
 )
 
-type configuration struct {
+type pluginConfig struct {
 	Trigger         string
 	DefaultLanguage string
 }
 
-func (c *configuration) GetDefaultLanguageTag() language.Tag {
+func (c *pluginConfig) GetDefaultLanguageTag() language.Tag {
 	defaultLanguage := language.English
 	if c == nil {
 		return defaultLanguage
@@ -25,9 +25,10 @@ func (c *configuration) GetDefaultLanguageTag() language.Tag {
 
 // OnConfigurationChange loads the plugin configuration
 func (p *Plugin) OnConfigurationChange() error {
-	configuration := new(configuration)
+	p.ServerConfig = p.API.GetConfig()
+	c := new(pluginConfig)
 
-	if err := p.API.LoadPluginConfiguration(configuration); err != nil {
+	if err := p.API.LoadPluginConfiguration(c); err != nil {
 		return errors.Wrap(err, "failed to load plugin configuration")
 	}
 
@@ -37,35 +38,34 @@ func (p *Plugin) OnConfigurationChange() error {
 		}
 	}
 
-	if err := p.API.RegisterCommand(getCommand(configuration.Trigger)); err != nil {
+	if err := p.API.RegisterCommand(getCommand(*p.ServerConfig.ServiceSettings.SiteURL, c.Trigger)); err != nil {
 		return errors.Wrap(err, "failed to register new command")
 	}
 
-	p.setConfiguration(configuration)
-	p.ServerConfig = p.API.GetConfig()
+	p.setConfiguration(c)
 
-	if bundle, err := p.InitBundle(); err != nil {
+	bundle, err := p.InitBundle()
+	if err != nil {
 		return err
-	} else {
-		p.bundle = bundle
 	}
+	p.bundle = bundle
 
 	return nil
 }
 
-// getConfigurationはプラグインのコンフィグを取得する
-func (p *Plugin) getConfiguration() *configuration {
+// getConfiguration はプラグインのコンフィグを取得する
+func (p *Plugin) getConfiguration() *pluginConfig {
 	p.configurationLock.RLock()
 	defer p.configurationLock.RUnlock()
 
 	if p.configuration == nil {
-		return &configuration{}
+		return &pluginConfig{}
 	}
 	return p.configuration
 }
 
-// getConfigurationはプラグインのコンフィグを設定する
-func (p *Plugin) setConfiguration(configuration *configuration) {
+// getConfiguration はプラグインのコンフィグを設定する
+func (p *Plugin) setConfiguration(configuration *pluginConfig) {
 	p.configurationLock.Lock()
 	defer p.configurationLock.Unlock()
 

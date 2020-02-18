@@ -1,38 +1,36 @@
-package janken
+package main
 
-import ()
-
-type JankenGameImpl1 struct {
-	JankenGameBase
+type gameImpl1 struct {
+	gameBase
 }
 
-func NewJankenGameImpl1() JankenGameInterface {
-	return &JankenGameImpl1{}
+func newGameImpl1() gameInterface {
+	return &gameImpl1{}
 }
 
-// GetResultは最大maxRoundsのジャンケンの結果を返す．
-// 結果は[]interface{}（各要素はinterface{}{int, Participant}]．最初の要素は順位、次の要素はParticipant）
-func (g *JankenGameImpl1) GetResult(game *JankenGame) []*Participant {
-	start_round := 0 // Handsの利用開始番号
-	start_rank := 1  // 順位の開始番号
-	result := g.nextRound(game.Participants, game.MaxRounds, start_round, start_rank, nil)
+// getResult は最大maxRoundsのジャンケンの結果を返す．
+// 結果は[]interface{}（各要素はinterface{}{int, participant}]．最初の要素は順位、次の要素はparticipant）
+func (g *gameImpl1) getResult(game *game) []*participant {
+	startRound := 0 // Handsの利用開始番号
+	startRank := 1  // 順位の開始番号
+	result := g.nextRound(game.Participants, game.MaxRounds, startRound, startRank, nil)
 	return result
 }
 
 /*
 n回戦のジャンケン結果を返すための再帰関数
-1位から順に*Participantをresultに格納していく
+1位から順に*participantをresultに格納していく
 Args:
     participants: 今評価中のジャンケンの参加者
     raound: 現在のラウンド
     rank: 今つけようとしている順位
     result: 結果
 Returns:
-    []*Participant: result
+    []*participant: result
 */
-func (g *JankenGameImpl1) nextRound(participants []*Participant, maxRounds, round, rank int, result []*Participant) []*Participant {
+func (g *gameImpl1) nextRound(participants []*participant, maxRounds, round, rank int, result []*participant) []*participant {
 	if result == nil {
-		result = make([]*Participant, 0, len(participants))
+		result = make([]*participant, 0, len(participants))
 	}
 
 	/*
@@ -41,7 +39,7 @@ func (g *JankenGameImpl1) nextRound(participants []*Participant, maxRounds, roun
 	*/
 	if len(participants) == 1 {
 		participants[0].Rank = rank
-		participants[0].ClearHandsAfter(round)
+		participants[0].clearHandsAfter(round)
 		result = append(result, participants[0])
 		return result
 	}

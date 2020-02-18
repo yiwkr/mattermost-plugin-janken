@@ -2,17 +2,18 @@
     "id": "com.github.yiwkr.mattermost-plugin-janken",
     "name": "Janken",
     "description": "This plugin provide /janken command.",
-    "version": "0.0.1",
-    "min_server_version": "5.6.0",
+    "version": "0.0.2",
+    "min_server_version": "5.12.0",
     "server": {
         "executables": {
             "linux-amd64": "server/dist/plugin-linux-amd64",
             "darwin-amd64": "server/dist/plugin-darwin-amd64",
             "windows-amd64": "server/dist/plugin-windows-amd64.exe"
-        },
-        "executable": ""
+        }
     },
     "settings_schema": {
+        "header": "",
+        "footer": "",
         "settings": [
             {
                 "key": "trigger",
@@ -33,5 +34,5 @@
                 ]
             }
         ]
-    }
-}
+     }
+ }

@@ -1,4 +1,4 @@
-package janken
+package main
 
 import (
 	"errors"
@@ -7,45 +7,48 @@ import (
 	"strings"
 
 	"github.com/kballard/go-shellquote"
-	"github.com/mattermost/mattermost-server/model"
-	"github.com/mattermost/mattermost-server/plugin"
+	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 const (
-	COMMAND_RESPONSE_USERNAME = "mattermost-plugin-janken"
+	commandResponseUsername = "janken"
 )
 
 var (
 	jankenGameTitle = &i18n.Message{
-		ID:    "JankenGameTitle",
-		Other: "Janken Game ({{.ID}}) created by @{{.Username}}",
+		ID:    "gameTitle",
+		Other: "Janken game ({{.ID}}) created by @{{.Username}}",
 	}
 	jankenGameDescription = &i18n.Message{
-		ID: "JankenGameDescription",
+		ID: "gameDescription",
 		Other: `Please join this janken game.
-Participants ({{.ParticipantsNum}}): {{.ParticipantsStr}}`,
+participants ({{.participantsNum}}): {{.participantsStr}}`,
 	}
 	jankenGameJoinButtonLabel = &i18n.Message{
-		ID:    "JankenGameJoinButtonLabel",
+		ID:    "gameJoinButtonLabel",
 		Other: "Join",
 	}
 	jankenGameConfigButtonLabel = &i18n.Message{
-		ID:    "JankenGameConfigButtonLabel",
+		ID:    "gameConfigButtonLabel",
 		Other: "Config",
 	}
 	jankenGameResultButtonLabel = &i18n.Message{
-		ID:    "JankenGameResultButtonLabel",
+		ID:    "gameResultButtonLabel",
 		Other: "Result",
 	}
 )
 
-type ParsedArgs struct {
+type parsedArgs struct {
 	Language *string
 }
 
+// ExecuteCommand executes a command that has been previously registered via the RegisterCommand API.
 func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
-	p.API.LogDebug("ExecuteCommand", "Context", fmt.Sprintf("%#v", c), "args", fmt.Sprintf("%#v", args))
+	p.API.LogDebug("executeCommand", "Context", fmt.Sprintf("%#v", c), "args", fmt.Sprintf("%#v", args))
+
+	siteURL := *p.ServerConfig.ServiceSettings.SiteURL
 
 	parsedArgs, err := p.parseArgs(args.Command)
 	if err != nil {
@@ -54,29 +57,31 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 			errmsg := fmt.Sprintf("Failed to parse arguments.: %s", err.Error())
 			message = fmt.Sprintf("%s\n\n%s", message, errmsg)
 		}
-		response := NewCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, message, nil)
+		response := newCommandResponse(siteURL, model.COMMAND_RESPONSE_TYPE_EPHEMERAL, message, nil)
 		return response, nil
 	}
 
-	game := NewJankenGame(&JankenGameImpl1{})
+	game := newGame(&gameImpl1{})
 	game.Creator = args.UserId
 	game.Language = *parsedArgs.Language
 	err = p.store.jankenStore.Save(game)
 	if err != nil {
 		errmsg := fmt.Sprintf("Failed to store game data.: %s", err.Error())
-		response := NewCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, errmsg, nil)
+		response := newCommandResponse(siteURL, model.COMMAND_RESPONSE_TYPE_EPHEMERAL, errmsg, nil)
 		return response, nil
 	}
 
 	if !p.isValidLanguage(game.Language) {
 		defaultLanguageStr := p.configuration.DefaultLanguage
-		message := fmt.Sprintf(`Language "%s" is not available. "%s" is used instead.`, game.Language, defaultLanguageStr)
-		p.sendEphemeralPost(args.ChannelId, args.UserId, message)
+		if game.Language != "" {
+			message := fmt.Sprintf(`Language "%s" is not available. "%s" is used instead.`, game.Language, defaultLanguageStr)
+			p.sendEphemeralPost(args.ChannelId, args.UserId, message)
+		}
 		game.Language = defaultLanguageStr
 	}
 
-	attachments := p.getJankenGameAttachments(*p.ServerConfig.ServiceSettings.SiteURL, PluginId, game)
-	response := NewCommandResponse(model.COMMAND_RESPONSE_TYPE_IN_CHANNEL, "", attachments)
+	attachments := p.getGameAttachments(siteURL, PluginID, game)
+	response := newCommandResponse(siteURL, model.COMMAND_RESPONSE_TYPE_IN_CHANNEL, "", attachments)
 	return response, nil
 }
 
@@ -89,8 +94,8 @@ func (p *Plugin) isValidLanguage(language string) bool {
 	return false
 }
 
-func (p *Plugin) parseArgs(command string) (*ParsedArgs, error) {
-	parsedArgs := &ParsedArgs{Language: &p.configuration.DefaultLanguage}
+func (p *Plugin) parseArgs(command string) (*parsedArgs, error) {
+	parsedArgs := &parsedArgs{Language: &p.configuration.DefaultLanguage}
 
 	fs := flag.NewFlagSet("janken", flag.ContinueOnError)
 	parsedArgs.Language = fs.String("l", "", `Language option. Available values are "en" or "ja".`)
@@ -107,28 +112,28 @@ func (p *Plugin) parseArgs(command string) (*ParsedArgs, error) {
 
 	positionalArgs := fs.Args()
 	if len(positionalArgs) > 0 {
-		return nil, errors.New(fmt.Sprintf("Invalid arguments: %s", positionalArgs))
+		return nil, fmt.Errorf("Invalid arguments: %s", positionalArgs)
 	}
 
 	return parsedArgs, nil
 }
 
-func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *JankenGame) []*model.SlackAttachment {
+func (p *Plugin) getGameAttachments(siteURL, pluginID string, game *game) []*model.SlackAttachment {
 	// 現在の参加者を取得
 	participants := make([]string, len(game.Participants))
 	for i, pp := range game.Participants {
-		user, err := p.API.GetUser(pp.UserId)
+		user, err := p.API.GetUser(pp.UserID)
 		if err != nil {
-			p.API.LogError(fmt.Sprintf("User %s is not found.", pp.UserId))
+			p.API.LogError(fmt.Sprintf("User %s is not found.", pp.UserID))
 			continue
 		}
 		participants[i] = user.Username
 	}
 	// カンマ区切りの文字列に変換
-	participants_str := strings.Join(participants, ", ")
+	participantsStr := strings.Join(participants, ", ")
 
 	context := map[string]interface{}{
-		"id": game.Id,
+		"id": game.ID,
 	}
 
 	var username string
@@ -138,15 +143,15 @@ func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *Janken
 	}
 	username = user.Username
 
-	l := p.GetLocalizer(game.Language)
+	l := p.getLocalizer(game.Language)
 	// get localized messages
 	title := Localize(l, jankenGameTitle, map[string]interface{}{
-		"ID":       game.GetShortId(),
+		"ID":       game.getShortID(),
 		"Username": username,
 	})
 	description := Localize(l, jankenGameDescription, map[string]interface{}{
-		"ParticipantsNum": len(participants),
-		"ParticipantsStr": participants_str,
+		"participantsNum": len(participants),
+		"participantsStr": participantsStr,
 	})
 	joinButtonLabel := Localize(l, jankenGameJoinButtonLabel, nil)
 	configButtonLabel := Localize(l, jankenGameConfigButtonLabel, nil)
@@ -160,7 +165,7 @@ func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *Janken
 				Name: joinButtonLabel,
 				Type: model.POST_ACTION_TYPE_BUTTON,
 				Integration: &model.PostActionIntegration{
-					URL:     fmt.Sprintf("%s/plugins/%s/api/v1/janken/join", siteURL, pluginId),
+					URL:     fmt.Sprintf("%s/plugins/%s/api/v1/janken/join", siteURL, pluginID),
 					Context: context,
 				},
 			},
@@ -168,7 +173,7 @@ func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *Janken
 				Name: configButtonLabel,
 				Type: model.POST_ACTION_TYPE_BUTTON,
 				Integration: &model.PostActionIntegration{
-					URL:     fmt.Sprintf("%s/plugins/%s/api/v1/janken/config", siteURL, pluginId),
+					URL:     fmt.Sprintf("%s/plugins/%s/api/v1/janken/config", siteURL, pluginID),
 					Context: context,
 				},
 			},
@@ -176,7 +181,7 @@ func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *Janken
 				Name: resultButtonLabel,
 				Type: model.POST_ACTION_TYPE_BUTTON,
 				Integration: &model.PostActionIntegration{
-					URL:     fmt.Sprintf("%s/plugins/%s/api/v1/janken/result", siteURL, pluginId),
+					URL:     fmt.Sprintf("%s/plugins/%s/api/v1/janken/result", siteURL, pluginID),
 					Context: context,
 				},
 			},
@@ -185,8 +190,8 @@ func (p *Plugin) getJankenGameAttachments(siteURL, pluginId string, game *Janken
 	return attachments
 }
 
-func (p *Plugin) attachJankenGameToPost(post *model.Post, siteURL, pluginId string, game *JankenGame) *model.Post {
-	attachments := p.getJankenGameAttachments(siteURL, pluginId, game)
+func (p *Plugin) attachGameToPost(post *model.Post, siteURL, pluginID string, game *game) *model.Post {
+	attachments := p.getGameAttachments(siteURL, pluginID, game)
 
 	model.ParseSlackAttachment(post, attachments)
 	return post
@@ -202,12 +207,13 @@ func (p *Plugin) getCommandUsage() string {
 	return fmt.Sprintf(template, p.configuration.Trigger)
 }
 
-func NewCommandResponse(responseType, text string, attachments []*model.SlackAttachment) *model.CommandResponse {
+func newCommandResponse(siteURL, responseType, text string, attachments []*model.SlackAttachment) *model.CommandResponse {
 	response := &model.CommandResponse{
 		ResponseType: responseType,
 		Text:         text,
-		Username:     COMMAND_RESPONSE_USERNAME,
+		Username:     commandResponseUsername,
 		Attachments:  attachments,
+		IconURL:      fmt.Sprintf("%s/plugins/%s/%s", siteURL, PluginID, iconFilename),
 	}
 	return response
 }
